@@ -36,7 +36,7 @@ module eth_tb;
        .AXI_ID_WIDTH(IW),
        .AXI_USER_WIDTH(UW)
        ) 
-   axi_master_tx_dv(clk), axi_master_rx_dv(clk);
+   axi_master_tx_dv(s_clk), axi_master_rx_dv(s_clk);
    
    AXI_BUS
      #(
@@ -44,7 +44,8 @@ module eth_tb;
        .AXI_DATA_WIDTH(DW),
        .AXI_ID_WIDTH(IW),
        .AXI_USER_WIDTH(UW)
-       ) axi_master_tx(), axi_master_rx();
+       ) 
+   axi_master_tx(), axi_master_rx();
    
    `AXI_ASSIGN(axi_master_tx, axi_master_tx_dv)
    `AXI_ASSIGN(axi_master_rx, axi_master_rx_dv)
@@ -155,14 +156,14 @@ module eth_tb;
       automatic axi_test::axi_b_beat  #(.IW(IW), .UW(UW)) b_beat;
       
       axi_master_tx_drv.reset_master();
-      @(posedge clk);
+      @(posedge s_clk);
       
       ax_beat.ax_data = 'hcafebabe;
       axi_master_tx_drv.send_aw(ax_beat);
       w_beat.w_data = 'hcafebabe;
       axi_master_tx_drv.send_w(w_beat);
       
-      @(posedge clk);
+      @(posedge s_clk);
       
       done = 1;
    end
