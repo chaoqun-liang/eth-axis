@@ -81,6 +81,8 @@ module rgmii_soc (
 wire [3:0] phy_rxd_delay;
 wire       phy_rx_ctl_delay;
 
+`ifdef GENESYSII
+   
 IDELAYCTRL
 idelayctrl_inst
 (
@@ -184,6 +186,11 @@ phy_rx_ctl_idelay
     .LDPIPEEN(1'b0),
     .REGRST(1'b0)
 );
+
+`else // !`ifdef GENESYSII
+   assign phy_rx_ctl_delay = phy_rx_ctl;
+   assign phy_rxd_delay = phy_rxd;
+`endif
 
 rgmii_core
 core_inst (

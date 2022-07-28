@@ -29,7 +29,11 @@ THE SOFTWARE.
  */
 module rgmii_core #
 (
-    parameter TARGET = "XILINX"
+`ifdef GENESYSII
+ parameter TARGET = "XILINX"
+`else
+ parameter TARGET = "GENERIC"
+`endif
 )
 (
     /*
@@ -135,7 +139,7 @@ eth_mac_inst (
     .rx_fifo_good_frame(),
     .speed(),
 
-    .ifg_delay(12)
+    .ifg_delay(8'd12)
 );
 
 endmodule

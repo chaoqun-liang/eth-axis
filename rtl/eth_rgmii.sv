@@ -1,18 +1,17 @@
-
 module eth_rgmii
   #(
-    parameter int AxiAddrWidth = -1,
-    parameter int AxiDataWidth = -1,
-    parameter int AxiIdWidth = -1,
-    parameter int AxiUserWidth = 1,
+    parameter int AXI_ADDR_WIDTH = -1,
+    parameter int AXI_DATA_WIDTH = -1,
+    parameter int AXI_ID_WIDTH   = -1,
+    parameter int AXI_USER_WIDTH =  1
     )
    (
-    input logic       clk_i , // Clock
+    input logic       clk_i, // Clock
     input logic       clk_200MHz_i,
     input logic       rst_ni, // Asynchronous reset active low
     
     input  logic      eth_clk_i,
-    AXI_BUS.in        ethernet,
+    AXI_BUS.Slave     ethernet,
     
     // Ethernet
     input wire 	      eth_rxck,
@@ -22,21 +21,23 @@ module eth_rgmii
     output wire       eth_txctl,
     output wire [3:0] eth_txd,
     output wire       eth_rst_n ,
-    input logic       phy_tx_clk_i
+    input logic       phy_tx_clk_i,
+
+    output reg        eth_irq 
     
-    )
+    );
     
    logic 		      eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
-   logic [AxiAddrWidth-1:0]   eth_addr;
-   logic [AxiDataWidth-1:0]   eth_wrdata, eth_rdata;
-   logic [AxiDataWidth/8-1:0] eth_be;
+   logic [AXI_ADDR_WIDTH-1:0]   eth_addr;
+   logic [AXI_DATA_WIDTH-1:0]   eth_wrdata, eth_rdata;
+   logic [AXI_DATA_WIDTH/8-1:0] eth_be;
    
    axi2mem 
      #(
-       .AXI_ID_WIDTH   ( AxiIdWidth       ),
-       .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
-       .AXI_DATA_WIDTH ( AxiDataWidth     ),
-       .AXI_USER_WIDTH ( AxiUserWidth     )
+       .AXI_ID_WIDTH   ( AXI_ID_WIDTH     ),
+       .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH   ),
+       .AXI_DATA_WIDTH ( AXI_DATA_WIDTH   ),
+       .AXI_USER_WIDTH ( AXI_USER_WIDTH   )
        ) 
    i_axi2rom 
        (
@@ -75,12 +76,34 @@ module eth_rgmii
    .phy_tx_clk(eth_txck),
    .phy_txd(eth_txd),
    .phy_tx_ctl(eth_txctl),
+   
    .phy_reset_n(eth_rst_n),
-   .phy_int_n(eth_int_n),
-   .phy_pme_n(eth_pme_n),
-   .phy_mdc(eth_mdc),
-   .phy_mdio_i(eth_mdio_i),
-   .phy_mdio_o(eth_mdio_o),
-   .phy_mdio_oe(eth_mdio_oe),
-   .eth_irq(irq_sources[2])
-);
+   
+   .phy_int_n(eth_int_n), // NOT DRIVEN
+   .phy_pme_n(eth_pme_n), // NOT DRIVEN
+   
+   .phy_mdc(eth_mdc),         // MDIO
+   .phy_mdio_i('0),           // MDIO
+   .phy_mdio_o(eth_mdio_o),   // MDIO
+   .phy_mdio_oe(eth_mdio_oe), // MDIO
+   
+   .eth_irq(eth_irq)
+   );
+   
+
+//   IOBUF
+//     #(
+//       .DRIVE(12), // Specify the output drive strength
+//       .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE" 
+//       .IOSTANDARD("DEFAULT"), // Specify the I/O standard
+//       .SLEW("SLOW") // Specify the output slew rate
+//       ) 
+//   IOBUF_inst 
+//     (
+//      .O(eth_mdio_i),     // Buffer output
+//      .IO(eth_mdio),   // Buffer inout port (connect directly to top-level port)
+//      .I(eth_mdio_o),     // Buffer input
+//      .T(~eth_mdio_oe)      // 3-state enable input, high=input, low=output
+//      );
+   
+endmodule

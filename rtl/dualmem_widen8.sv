@@ -27,7 +27,7 @@ module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
  `define RAMB16
 `endif
 */
-   
+
 `ifdef GENESYSII
  `define RAMB16
 `endif
@@ -93,13 +93,13 @@ module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
         .doA    ( dout0[r*8 +: 8]          ),     // Port A 8-bit Data Output
         .addrA  ( addra[10:0]              ),     // Port A 11-bit Address Input
         .diA    ( din0[r*8 +: 8]           ),     // Port A 8-bit Data Input
-        .enA    ( en0[r]                   ),     // Port A RAM Enable Input
+        .enaA   ( en0[r]                   ),     // Port A RAM Enable Input
         .weA    ( we0[r]                   ),     // Port A Write Enable Input
         .clkB   ( clkb                     ),     // Port B Clock
         .doB    ( dout1[r*32 +: 32]        ),     // Port B 32-bit Data Output
         .addrB  ( addrb[8:0]               ),     // Port B 9-bit Address Input
         .diB    ( din1[r*32 +: 32]         ),     // Port B 32-bit Data Input
-        .enB    ( en1[r]                   ),     // Port B RAM Enable Input
+        .enaB   ( en1[r]                   ),     // Port B RAM Enable Input
         .weB    ( we1[r]                   )      // Port B Write Enable Input
         );
    endgenerate

@@ -1,42 +1,45 @@
+
 // See LICENSE for license details.
-`default_nettype none
+`ifdef GENESYSII
+ `default_nettype none
+`endif
 
 module framing_top
   (
-  input wire          msoc_clk,
+  input wire 	      msoc_clk,
   input wire [14:0]   core_lsu_addr,
   input wire [63:0]   core_lsu_wdata,
   input wire [7:0]    core_lsu_be,
-  input wire          ce_d,
-  input wire          we_d,
-  input wire          framing_sel,
+  input wire 	      ce_d,
+  input wire 	      we_d,
+  input wire 	      framing_sel,
   output logic [63:0] framing_rdata,
 
     // Internal 125 MHz clock
-  input wire          clk_int,
-  input wire          rst_int,
-  input wire          clk90_int,
-  input wire          clk_200_int,
-
+  input wire 	      clk_int,
+  input wire 	      rst_int,
+  input wire 	      clk90_int,
+  input wire 	      clk_200_int,
+ 
     /*
      * Ethernet: 1000BASE-T RGMII
      */
-  input wire          phy_rx_clk,
+  input wire 	      phy_rx_clk,
   input wire [3:0]    phy_rxd,
-  input wire          phy_rx_ctl,
-  output wire         phy_tx_clk,
+  input wire 	      phy_rx_ctl,
+  output wire 	      phy_tx_clk,
   output wire [3:0]   phy_txd,
-  output wire         phy_tx_ctl,
-  output wire         phy_reset_n,
-  input wire          phy_int_n,
-  input wire          phy_pme_n,
+  output wire 	      phy_tx_ctl,
+  output wire 	      phy_reset_n,
+  input wire 	      phy_int_n,
+  input wire 	      phy_pme_n,
    
-  input wire          phy_mdio_i,
-  output reg          phy_mdio_o,
-  output reg          phy_mdio_oe,
-  output wire         phy_mdc,
+  input wire 	      phy_mdio_i,
+  output reg 	      phy_mdio_o,
+  output reg 	      phy_mdio_oe,
+  output wire 	      phy_mdc,
 
-  output reg          eth_irq
+  output reg 	      eth_irq
    );
 
 // obsolete signals to be removedphy_
@@ -388,4 +391,7 @@ xlnx_ila_3 eth_ila_clk_msoc (
 `endif
    
 endmodule // framing_top
-`default_nettype wire
+
+`ifdef GENESYSII
+ `default_nettype none
+`endif

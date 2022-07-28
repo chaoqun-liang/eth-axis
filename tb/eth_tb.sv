@@ -1,10 +1,10 @@
 
 `include "axi/assign.svh"
 
-module tb_eth;
+module eth_tb;
    
    parameter AW = 32;
-   parameter DW = 32;
+   parameter DW = 64;
    parameter IW = 8;
    parameter UW = 8;
    
@@ -36,7 +36,7 @@ module tb_eth;
        .AXI_ID_WIDTH(IW),
        .AXI_USER_WIDTH(UW)
        ) 
-   axi_master_tx(clk), axi_master_rx(clk);
+   axi_master_tx_dv(clk), axi_master_rx_dv(clk);
    
    AXI_BUS
      #(
@@ -45,10 +45,12 @@ module tb_eth;
        .AXI_ID_WIDTH(IW),
        .AXI_USER_WIDTH(UW)
        ) axi_master_tx(), axi_master_rx();
+   
    `AXI_ASSIGN(axi_master_tx, axi_master_tx_dv)
    `AXI_ASSIGN(axi_master_rx, axi_master_rx_dv)
    
-   axi_test::axi_driver #(.AW(AW), .DW(DW), .IW(IW), .UW(UW), .TA(200ps), .TT(700ps)) axi_master_drv = new(axi_master_dv);
+   axi_test::axi_driver #(.AW(AW), .DW(DW), .IW(IW), .UW(UW), .TA(200ps), .TT(700ps)) axi_master_tx_drv = new(axi_master_tx_dv);
+   axi_test::axi_driver #(.AW(AW), .DW(DW), .IW(IW), .UW(UW), .TA(200ps), .TT(700ps)) axi_master_rx_drv = new(axi_master_rx_dv);
    
    eth_rgmii
      #(
@@ -152,13 +154,13 @@ module tb_eth;
       automatic axi_test::axi_w_beat #(.DW(DW), .UW(UW)) w_beat = new;
       automatic axi_test::axi_b_beat  #(.IW(IW), .UW(UW)) b_beat;
       
-      axi_master_drv.reset_master();
+      axi_master_tx_drv.reset_master();
       @(posedge clk);
       
       ax_beat.ax_data = 'hcafebabe;
-      axi_master_drv.send_aw(ax_beat);
+      axi_master_tx_drv.send_aw(ax_beat);
       w_beat.w_data = 'hcafebabe;
-      axi_master_drv.send_w(w_beat);
+      axi_master_tx_drv.send_w(w_beat);
       
       @(posedge clk);
       
