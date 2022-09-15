@@ -13,6 +13,15 @@ export PATH=$PWD:$PATH
 
 A questo punto puoi lanciare lo script per compilare i file axi con modelsim:
 
-./scripts/compile_vsim.sh
+source ./scripts/compile_vsim.sh
 
-vsim eth_tb -t 1ns -coverage -voptargs="+acc +cover=bcesfx"
+vsim eth_tb -t 1ns -coverage -voptargs="+acc +cover=bcesfx" &
+
+Address map:
+
+0x800 : mac_address[31:0]
+0x808 : {irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
+0x810 : tx_enable_dly <= 10; tx_packet_length <= core_lsu_wdata;
+0x818 : tx_enable_dly <= 0; tx_packet_length <= 0;
+0x820 : lastbuf
+0x828 : firstbuf

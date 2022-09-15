@@ -158,13 +158,15 @@ module eth_tb;
       axi_master_tx_drv.reset_master();
       @(posedge s_clk);
       
-      ax_beat.ax_data = 'hcafebabe;
+      ax_beat.ax_addr = 'h00000800;
       axi_master_tx_drv.send_aw(ax_beat);
+
       w_beat.w_data = 'hcafebabe;
+      w_beat.w_strb = 'b00001111;
       axi_master_tx_drv.send_w(w_beat);
-      
-      @(posedge s_clk);
-      
+           
+      repeat (100) @(posedge s_clk);
+
       done = 1;
    end
    
