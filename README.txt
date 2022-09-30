@@ -25,3 +25,8 @@ Address map:
 0x818 : tx_enable_dly <= 0; tx_packet_length <= 0;
 0x820 : lastbuf
 0x828 : firstbuf
+
+
+Driver linux:
+https://github.com/openhwgroup/cva6-sdk/blob/master/linux_patch/0001-Incorporate-lowrisc-drivers-for-latest-kernel-releas.patch
+
