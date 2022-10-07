@@ -1,8 +1,10 @@
 
+`timescale 1 ns/1 ps
 `include "axi/assign.svh"
 
+
 module eth_tb;
-   
+
    parameter AW = 32;  //Address width
    parameter DW = 64;  //Data width
    parameter IW = 8;   //ID width
@@ -18,23 +20,24 @@ module eth_tb;
    logic s_clk_125MHz_90 = 0;
    logic s_rst_n         = 1;
    logic done            = 0;
-   
-   wire       eth_rxck;
-   wire       eth_rxctl;
+
+   //signals to instantiate the DUT
+   wire  eth_rxck;
+   wire  eth_rxctl;
    wire [3:0] eth_rxd;
    wire       eth_txck;
    wire       eth_txctl;
    wire [3:0] eth_txd;
-   
    wire       eth_tx_rst_n;
    wire       eth_rx_rst_n;
-
-
-  // typedef logic [DW-1:0] data_t;   //cella di memoria
-  // data_t                 memory[bit [31:0]]; //memoria
-
    
- // A clocked AXI4 interface for use in design verification
+   //---------------------AXI drivers-----------------------
+
+   typedef logic [AW-1:0] axi_addr_t;
+   typedef logic [DW-1:0] axi_data_t;
+   typedef logic [DW/8-1:0] axi_strb_t;
+   typedef logic [IW-1:0]   axi_id_t;
+   
    AXI_BUS_DV
      #(
        .AXI_ADDR_WIDTH(AW),
@@ -42,10 +45,8 @@ module eth_tb;
        .AXI_ID_WIDTH(IW),
        .AXI_USER_WIDTH(UW)
        ) 
-   axi_master_tx_dv(s_clk), axi_master_rx_dv(s_clk); //"master" (driver)
- 
-
-   // An AXI4 interface, definito nel file axi_intf.sv
+   axi_master_tx_dv(s_clk), axi_master_rx_dv(s_clk);
+   
    AXI_BUS
      #(
        .AXI_ADDR_WIDTH(AW),
@@ -53,16 +54,24 @@ module eth_tb;
        .AXI_ID_WIDTH(IW),
        .AXI_USER_WIDTH(UW)
        ) 
-   axi_master_tx(), axi_master_rx(); //"slave"
-
-   //definizione: AXI_ASSIGN(slv, mst)
+   axi_master_tx(),axi_master_rx();
+   
    `AXI_ASSIGN(axi_master_tx, axi_master_tx_dv)
    `AXI_ASSIGN(axi_master_rx, axi_master_rx_dv)
+   
+   typedef axi_test::axi_driver #(.AW(AW), .DW(DW), .IW(IW), .UW(UW), .TA(200ps), .TT(700ps)) axi_drv_t;
+   axi_drv_t axi_master_tx_drv =  new(axi_master_tx_dv);
+   axi_drv_t axi_master_rx_drv =  new(axi_master_rx_dv);
 
-   //package axi_test, classe axi_driver (file axi_test.sv)
-   axi_test::axi_driver #(.AW(AW), .DW(DW), .IW(IW), .UW(UW), .TA(200ps), .TT(700ps)) axi_master_tx_drv = new(axi_master_tx_dv);
-   axi_test::axi_driver #(.AW(AW), .DW(DW), .IW(IW), .UW(UW), .TA(200ps), .TT(700ps)) axi_master_rx_drv = new(axi_master_rx_dv);
-
+   //beats
+   axi_test::axi_ax_beat #(.AW(AW), .IW(IW), .UW(UW)) ar_beat = new();  
+   axi_test::axi_r_beat  #(.DW(DW), .IW(IW), .UW(UW)) r_beat  = new();
+   axi_test::axi_ax_beat #(.AW(AW), .IW(IW), .UW(UW)) aw_beat = new();
+   axi_test::axi_w_beat  #(.DW(DW), .UW(UW))          w_beat  = new();
+   axi_test::axi_b_beat  #(.IW(IW), .UW(UW))          b_beat  = new();
+   
+   
+   // ---------------------------- DUT -----------------------------
    //TX ETH_RGMII
    eth_rgmii
      #(
@@ -81,7 +90,7 @@ module eth_tb;
       .ethernet        ( axi_master_tx     ),
       
       .eth_rxck        ( eth_rxck          ),
-      .eth_rxctl       ( eth_rxctrl        ),
+      .eth_rxctl       ( eth_rxctl        ),
       .eth_rxd         ( eth_rxd           ),
       
       .eth_txck        ( eth_txck          ),
@@ -110,7 +119,7 @@ module eth_tb;
       .ethernet        ( axi_master_rx     ),
       
       .eth_rxck        ( eth_txck          ),
-      .eth_rxctl       ( eth_txctrl        ),
+      .eth_rxctl       ( eth_txctl         ),
       .eth_rxd         ( eth_txd           ),
       
       .eth_txck        ( eth_rxck          ),
@@ -120,101 +129,115 @@ module eth_tb;
       .eth_rst_n       ( eth_rx_rst_n      ),
       .phy_tx_clk_i    ( s_clk_125MHz_0    ) //0
       );
-   
+
+   // begin of simulation -------------------------------------
    initial begin
-      #tCK;
+     /* #tCK;
       s_rst_n <= 0;
       #tCK;
       s_rst_n <= 1; //disattivo il reset
-      #tCK;
-      while (!done) begin //creazione CLOCK
-	      s_clk <= 1; 
-	      #(tCK/2);
-	      s_clk <= 0;
-	      #(tCK/2);
+      #tCK;*/
+      while (!done) begin //SYSTEM CLOCK
+	       s_clk <= 1; 
+	       #(tCK/2);
+	       s_clk <= 0;
+	       #(tCK/2);
       end
    end
    
    initial begin
       while (!done) begin
-	 s_clk_200MHz <= 1;
-	 #(tCK200/2);
-	 s_clk_200MHz <= 0;
-	 #(tCK200/2);
+	       s_clk_200MHz <= 1;
+	       #(tCK200/2);
+	       s_clk_200MHz <= 0;
+	       #(tCK200/2);
       end
    end // initial begin
    
    initial begin
       while (!done) begin
-	 s_clk_125MHz_0 <= 1;
-	 #(tCK125/2);
-	 s_clk_125MHz_0 <= 0;
-	 #(tCK125/2);
+	       s_clk_125MHz_0 <= 1;
+	       #(tCK125/2);
+	       s_clk_125MHz_0 <= 0;
+	       #(tCK125/2);
       end
    end // initial begin
    
    initial begin
       while (!done) begin
-	 s_clk_125MHz_90 <= 0;
-	 #(tCK125/2);
-	 s_clk_125MHz_90 <= 1;
-	 #(tCK125/2);
+	       s_clk_125MHz_90 <= 0;
+	       #(tCK125/2);
+	       s_clk_125MHz_90 <= 1;
+	         #(tCK125/2);
       end
    end // initial begin
    
    initial begin
-      // axi_ax_beat --> the data transferred on a beat on the AW/AR channels.
-      automatic axi_test::axi_ax_beat #(.AW(AW), .IW(IW), .UW(UW)) ax_beat = new;
-      // axi_w_beat --> the data transferred on a beat on the W channel.
-      automatic axi_test::axi_w_beat #(.DW(DW), .UW(UW)) w_beat = new;
-      // axi_b_beat --> the data transferred on a beat on the B channel.
-      automatic axi_test::axi_b_beat  #(.IW(IW), .UW(UW)) b_beat;
+      #tCK;
+      s_rst_n <= 0;
+      repeat(10) @(posedge s_clk);
+      s_rst_n <= 1; //disattivo il reset
+      #tCK;
       
-      axi_master_tx_drv.reset_master(); //mette tutte le variabili del master a 0
+      axi_master_tx_drv.reset_master();
       @(posedge s_clk);
-      
-      ax_beat.ax_addr = 'h00000800;//indirizzo in cui scrivere
-      axi_master_tx_drv.send_aw(ax_beat);
-      
 
-      w_beat.w_data = 'hcafebabe; //dato da scrivere
+      //1
+      aw_beat.ax_addr = 'h00000800;//primo indirizzo in cui scrivere
+      axi_master_tx_drv.send_aw(aw_beat);
+      
+      w_beat.w_data = 'h00890702; //mac_address[31:0]
       w_beat.w_strb = 'b00001111;
       w_beat.w_last = 'b1;
       
       axi_master_tx_drv.send_w(w_beat);
       @(posedge s_clk);
-
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
-      //axi_master_rx_drv.send_b(b_beat);
-      //@(posedge s_clk);
       
-      //SECONDO MESSAGGIO
-      repeat (50) @(posedge s_clk);
-
-      axi_master_tx_drv.reset_master(); 
-      @(posedge s_clk);
+      //2 
+      aw_beat.ax_addr = 'h00000808;
+      axi_master_tx_drv.send_aw(aw_beat);
       
-      ax_beat.ax_addr = 'h00000808;
-      axi_master_tx_drv.send_aw(ax_beat);
-
-      w_beat.w_data = 'haaaabbbb;
+      w_beat.w_data = 'h00002301; //{irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
       w_beat.w_strb = 'b00001111;
       w_beat.w_last = 'b1;
       
       axi_master_tx_drv.send_w(w_beat);
       @(posedge s_clk);
-
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
-     // axi_master_rx_drv.send_b(b_beat);
+
+      //3
+      aw_beat.ax_addr = 'h00000810;
+      axi_master_tx_drv.send_aw(aw_beat);
+      
+      w_beat.w_data = 'h00000010; //Tx packet length
+      w_beat.w_strb = 'b00001111;
+      w_beat.w_last = 'b1;
+      
+      axi_master_tx_drv.send_w(w_beat);
+      @(posedge s_clk);
+      axi_master_tx_drv.recv_b(b_beat);
+      @(posedge s_clk);
+
+       //4
+      aw_beat.ax_addr = 'h00000828;
+      axi_master_tx_drv.send_aw(aw_beat);
+      
+      w_beat.w_data = 'h00000008; // Rx frame check sequence register(read) and last register(write)
+      w_beat.w_strb = 'b00001111;
+      w_beat.w_last = 'b1;
+      
+      axi_master_tx_drv.send_w(w_beat);
+      @(posedge s_clk);
+      axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
       
-      repeat (100) @(posedge s_clk);
-
+      repeat (1000) @(posedge s_clk);
       
-
       done = 1;
+     
    end
    
 endmodule
