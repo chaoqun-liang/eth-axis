@@ -22,8 +22,8 @@ module eth_tb;
    logic done            = 0;
 
    //signals to instantiate the DUT
-   wire  eth_rxck;
-   wire  eth_rxctl;
+   wire       eth_rxck;
+   wire       eth_rxctl;
    wire [3:0] eth_rxd;
    wire       eth_txck;
    wire       eth_txctl;
@@ -33,8 +33,8 @@ module eth_tb;
    
    //---------------------AXI drivers-----------------------
 
-   typedef logic [AW-1:0] axi_addr_t;
-   typedef logic [DW-1:0] axi_data_t;
+   typedef logic [AW-1:0]   axi_addr_t;
+   typedef logic [DW-1:0]   axi_data_t;
    typedef logic [DW/8-1:0] axi_strb_t;
    typedef logic [IW-1:0]   axi_id_t;
    
@@ -130,13 +130,9 @@ module eth_tb;
       .phy_tx_clk_i    ( s_clk_125MHz_0    ) //0
       );
 
+   
    // begin of simulation -------------------------------------
    initial begin
-     /* #tCK;
-      s_rst_n <= 0;
-      #tCK;
-      s_rst_n <= 1; //disattivo il reset
-      #tCK;*/
       while (!done) begin //SYSTEM CLOCK
 	       s_clk <= 1; 
 	       #(tCK/2);
@@ -152,7 +148,7 @@ module eth_tb;
 	       s_clk_200MHz <= 0;
 	       #(tCK200/2);
       end
-   end // initial begin
+   end 
    
    initial begin
       while (!done) begin
@@ -161,7 +157,7 @@ module eth_tb;
 	       s_clk_125MHz_0 <= 0;
 	       #(tCK125/2);
       end
-   end // initial begin
+   end
    
    initial begin
       while (!done) begin
@@ -170,7 +166,7 @@ module eth_tb;
 	       s_clk_125MHz_90 <= 1;
 	         #(tCK125/2);
       end
-   end // initial begin
+   end 
    
    initial begin
       #tCK;
@@ -183,10 +179,10 @@ module eth_tb;
       @(posedge s_clk);
 
       //1
-      aw_beat.ax_addr = 'h00000800;//primo indirizzo in cui scrivere
+      aw_beat.ax_addr = 'h00000800; //mac_address[31:0]
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h00890702; //mac_address[31:0]
+      w_beat.w_data = 'h00890702;
       w_beat.w_strb = 'b00001111;
       w_beat.w_last = 'b1;
       
@@ -196,10 +192,10 @@ module eth_tb;
       @(posedge s_clk);
       
       //2 
-      aw_beat.ax_addr = 'h00000808;
+      aw_beat.ax_addr = 'h00000808; //{irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h00002301; //{irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
+      w_beat.w_data = 'h00002301;
       w_beat.w_strb = 'b00001111;
       w_beat.w_last = 'b1;
       
@@ -209,10 +205,10 @@ module eth_tb;
       @(posedge s_clk);
 
       //3
-      aw_beat.ax_addr = 'h00000810;
+      aw_beat.ax_addr = 'h00000810; //Tx packet length
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h00000010; //Tx packet length
+      w_beat.w_data = 'h00000010; //minimum frame size is 64Byte
       w_beat.w_strb = 'b00001111;
       w_beat.w_last = 'b1;
       
@@ -221,11 +217,24 @@ module eth_tb;
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
 
-       //4
-      aw_beat.ax_addr = 'h00000828;
+      //4
+      aw_beat.ax_addr = 'h00000828; // Rx frame check sequence register(read) and last register(write)
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h00000008; // Rx frame check sequence register(read) and last register(write)
+      w_beat.w_data = 'h00000008;
+      w_beat.w_strb = 'b00001111;
+      w_beat.w_last = 'b1;
+      
+      axi_master_tx_drv.send_w(w_beat);
+      @(posedge s_clk);
+      axi_master_tx_drv.recv_b(b_beat);
+      @(posedge s_clk);
+
+      //5
+      aw_beat.ax_addr = 'h00001000; //Transmit buffer
+      axi_master_tx_drv.send_aw(aw_beat);
+      
+      w_beat.w_data = 'h00001234;
       w_beat.w_strb = 'b00001111;
       w_beat.w_last = 'b1;
       
@@ -234,7 +243,7 @@ module eth_tb;
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
       
-      repeat (1000) @(posedge s_clk);
+      repeat (2000) @(posedge s_clk);
       
       done = 1;
      

@@ -17,6 +17,12 @@ source ./scripts/compile_vsim.sh
 
 vsim eth_tb -t 1ns -coverage -voptargs="+acc +cover=bcesfx" &
 
+
+Per vedere le forme d'onda su Questa Sim:
+
+source ./scripts/eth_wave.do
+
+
 Address map:
 
 0x800 : mac_address[31:0]
