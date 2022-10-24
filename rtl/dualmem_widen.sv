@@ -58,27 +58,27 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
      
      asym_ram_tdp_read_first
        #(
-	 .WIDTHA(8),
-	 .SIZEA(2048),
-	 .ADDRWIDTHA(11),
-	 .WIDTHB(32),
-	 .SIZEB(512),
-	 .ADDRWIDTHB(9)
+	 .WIDTHA(32),
+	 .SIZEA(512),
+	 .ADDRWIDTHA(9),
+	 .WIDTHB(8),
+	 .SIZEB(2048),
+	 .ADDRWIDTHB(11)
 	 )
      asym_ram_tdp_read_first_inst
        (
-        .clkA   ( clka                     ),     // Port A Clock
-        .doA    ( douta[r*8 +: 8]          ),     // Port A 8-bit Data Output
-        .addrA  ( addra                    ),     // Port A 11-bit Address Input
-        .diA    ( dina[r*8 +: 8]           ),     // Port A 8-bit Data Input
-        .enaA   ( ena                      ),     // Port A RAM Enable Input
-        .weA    ( wea[r]                   ),     // Port A Write Enable Input
-        .clkB   ( clkb                     ),     // Port B Clock
-        .doB    ( doutb[r*32 +: 32]        ),     // Port B 32-bit Data Output
-        .addrB  ( addrb                    ),     // Port B 9-bit Address Input
-        .diB    ( dinb[r*32 +: 32]         ),     // Port B 32-bit Data Input
-        .enaB   ( enb                      ),     // Port B RAM Enable Input
-        .weB    ( web[r]                   )      // Port B Write Enable Input
+        .clkA   ( clkb                     ),     // Port A Clock
+        .doA    ( doutb[r*8 +: 8]          ),     // Port A 8-bit Data Output
+        .addrA  ( addrb                    ),     // Port A 11-bit Address Input
+        .diA    ( dinb[r*8 +: 8]           ),     // Port A 8-bit Data Input
+        .enaA   ( enb                      ),     // Port A RAM Enable Input
+        .weA    ( web[r]                   ),     // Port A Write Enable Input
+        .clkB   ( clka                     ),     // Port B Clock
+        .doB    ( douta[r*32 +: 32]        ),     // Port B 32-bit Data Output
+        .addrB  ( addra                    ),     // Port B 9-bit Address Input
+        .diB    ( dina[r*32 +: 32]         ),     // Port B 32-bit Data Input
+        .enaB   ( ena                      ),     // Port B RAM Enable Input
+        .weB    ( wea[r]                   )      // Port B Write Enable Input
         );
       
    endgenerate
