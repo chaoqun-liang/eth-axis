@@ -68,15 +68,15 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
      asym_ram_tdp_read_first_inst
        (
         .clkA   ( clkb                     ),     // Port A Clock
-        .doA    ( doutb[r*8 +: 8]          ),     // Port A 8-bit Data Output
+        .doA    ( doutb[r*32 +: 32]          ),     // Port A 8-bit Data Output
         .addrA  ( addrb                    ),     // Port A 11-bit Address Input
-        .diA    ( dinb[r*8 +: 8]           ),     // Port A 8-bit Data Input
+        .diA    ( dinb[r*32 +: 32]           ),     // Port A 8-bit Data Input
         .enaA   ( enb                      ),     // Port A RAM Enable Input
         .weA    ( web[r]                   ),     // Port A Write Enable Input
         .clkB   ( clka                     ),     // Port B Clock
-        .doB    ( douta[r*32 +: 32]        ),     // Port B 32-bit Data Output
+        .doB    ( douta[r*8 +: 8]        ),     // Port B 32-bit Data Output
         .addrB  ( addra                    ),     // Port B 9-bit Address Input
-        .diB    ( dina[r*32 +: 32]         ),     // Port B 32-bit Data Input
+        .diB    ( dina[r*8 +: 8]         ),     // Port B 32-bit Data Input
         .enaB   ( ena                      ),     // Port B RAM Enable Input
         .weB    ( wea[r]                   )      // Port B Write Enable Input
         );
