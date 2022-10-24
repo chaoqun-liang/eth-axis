@@ -63,7 +63,7 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
 	 .ADDRWIDTHA(9),
 	 .WIDTHB(8),
 	 .SIZEB(2048),
-	 .ADDRWIDTHB(11)
+	 .ADDRWIDTHB(11) 
 	 )
      asym_ram_tdp_read_first_inst
        (

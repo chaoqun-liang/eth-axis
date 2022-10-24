@@ -102,6 +102,7 @@ module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
         .enaB   ( en0[r]                   ),     // Port B RAM Enable Input
         .weB    ( we0[r]                   )      // Port B Write Enable Input
         );
+   
    endgenerate
   
 `endif
