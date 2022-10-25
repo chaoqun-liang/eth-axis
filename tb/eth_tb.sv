@@ -178,12 +178,29 @@ module eth_tb;
       axi_master_tx_drv.reset_master();
       @(posedge s_clk);
 
-       //1
-      aw_beat.ax_addr = 'h00001000; //Transmit buffer
+      
+      //Lunghezza del pacchetto 
+      aw_beat.ax_addr = 'h00000810; //Tx packet length
+      axi_master_tx_drv.send_aw(aw_beat);
+     
+      w_beat.w_data = 'h0000002E; //minimum frame size is 64Byte
+      w_beat.w_strb = 'b00001111;
+      w_beat.w_last = 'b1;
+      
+      axi_master_tx_drv.send_w(w_beat);
+      @(posedge s_clk);
+      axi_master_tx_drv.recv_b(b_beat);
+      @(posedge s_clk);
+
+      repeat(5) @(posedge s_clk);
+      
+      //RIEMPIMENTO BUFFER --------------------
+      //1
+      aw_beat.ax_addr = 'h00001000;
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h12345678;
-      w_beat.w_strb = 'b00001111;
+      w_beat.w_data = 'h1032207098001032; // 230100890702 2301, mac dest + inizio di mac source
+      w_beat.w_strb = 'b11111111;
       w_beat.w_last = 'b1;
       
       axi_master_tx_drv.send_w(w_beat);
@@ -192,11 +209,11 @@ module eth_tb;
       @(posedge s_clk);
 
       //2
-      aw_beat.ax_addr = 'h00001008; //Transmit buffer
+      aw_beat.ax_addr = 'h00001008;
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h23456789;
-      w_beat.w_strb = 'b00001111;
+      w_beat.w_data = 'h3210460020709800; // 00890702 0064 0123, fine mac source + length + payload
+      w_beat.w_strb = 'b11111111;
       w_beat.w_last = 'b1;
       
       axi_master_tx_drv.send_w(w_beat);
@@ -205,11 +222,11 @@ module eth_tb;
       @(posedge s_clk);
       
       //3
-      aw_beat.ax_addr = 'h00001010; //Transmit buffer
+      aw_beat.ax_addr = 'h00001010;
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h3456789A;
-      w_beat.w_strb = 'b00001111;
+      w_beat.w_data = 'h4321FEDCBA987654; //456789ABCDEF1234 payload 
+      w_beat.w_strb = 'b11111111;
       w_beat.w_last = 'b1;
      
       axi_master_tx_drv.send_w(w_beat);
@@ -218,11 +235,11 @@ module eth_tb;
       @(posedge s_clk);
 
       //4
-      aw_beat.ax_addr = 'h00001018; //Transmit buffer
+      aw_beat.ax_addr = 'h00001018;
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h456789AB;
-      w_beat.w_strb = 'b00001111;
+      w_beat.w_data = 'h65432FEDCBA98765; //payload
+      w_beat.w_strb = 'b11111111;
       w_beat.w_last = 'b1;
      
       axi_master_tx_drv.send_w(w_beat);
@@ -230,12 +247,12 @@ module eth_tb;
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
 
-       //5
-      aw_beat.ax_addr = 'h00001020; //Transmit buffer
+      //5
+      aw_beat.ax_addr = 'h00001020;
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h56789ABC;
-      w_beat.w_strb = 'b00001111;
+      w_beat.w_data = 'h9876543FEDCBA987; // payload
+      w_beat.w_strb = 'b11111111;
       w_beat.w_last = 'b1;
      
       axi_master_tx_drv.send_w(w_beat);
@@ -243,12 +260,12 @@ module eth_tb;
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
 
-       //6
-      aw_beat.ax_addr = 'h00001028; //Transmit buffer
+      //6
+      aw_beat.ax_addr = 'h00001028;
       axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h6789ABCD;
-      w_beat.w_strb = 'b00001111;
+      w_beat.w_data = 'hDCBA987654FEDCBA; // payload
+      w_beat.w_strb = 'b11111111;
       w_beat.w_last = 'b1;
      
       axi_master_tx_drv.send_w(w_beat);
@@ -256,10 +273,38 @@ module eth_tb;
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
 
-      //riempimento registri
+      //7
+      aw_beat.ax_addr = 'h00001030;
+      axi_master_tx_drv.send_aw(aw_beat);
+      
+      w_beat.w_data = 'h876FEDCBA98765FE; // payload
+      w_beat.w_strb = 'b11111111;
+      w_beat.w_last = 'b1;
+      
+      axi_master_tx_drv.send_w(w_beat);
+      @(posedge s_clk);
+      axi_master_tx_drv.recv_b(b_beat);
+      @(posedge s_clk);
+
+      //8
+      aw_beat.ax_addr = 'h00001038;
+      axi_master_tx_drv.send_aw(aw_beat);
+      
+      w_beat.w_data = 'hFEDCBA987FEDCBA9; // paylaod
+      w_beat.w_strb = 'b11111111;
+      w_beat.w_last = 'b1;
+      
+      axi_master_tx_drv.send_w(w_beat);
+      @(posedge s_clk);
+      axi_master_tx_drv.recv_b(b_beat);
+      @(posedge s_clk);
+
+      
+      
+      //riempimento registri ---------------------------
 
       repeat(10) @(posedge s_clk)
-      
+        
       //1
       aw_beat.ax_addr = 'h00000800; //mac_address[31:0]
       axi_master_tx_drv.send_aw(aw_beat);
@@ -286,11 +331,11 @@ module eth_tb;
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
 
-      //3
+    /*  //3
       aw_beat.ax_addr = 'h00000810; //Tx packet length
       axi_master_tx_drv.send_aw(aw_beat);
      
-      w_beat.w_data = 'h00000010; //minimum frame size is 64Byte
+      w_beat.w_data = 'h0000002E; //minimum frame size is 64Byte
       w_beat.w_strb = 'b00001111;
       w_beat.w_last = 'b1;
       
@@ -298,6 +343,7 @@ module eth_tb;
       @(posedge s_clk);
       axi_master_tx_drv.recv_b(b_beat);
       @(posedge s_clk);
+      */
 
       //4
       aw_beat.ax_addr = 'h00000828; // Rx frame check sequence register(read) and last register(write)
@@ -314,7 +360,7 @@ module eth_tb;
     
     
       
-      repeat (2000) @(posedge s_clk);
+      repeat (4500) @(posedge s_clk);
       
       done = 1;
      

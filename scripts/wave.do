@@ -44,7 +44,7 @@ add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/rst_ni
 add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/req_o
 add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/we_o
 add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/addr_o
-add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/be_o
+add wave -noupdate -group axi2mem -expand /eth_tb/i_eth_rgmii_tx/i_axi2rom/be_o
 add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/data_o
 add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/data_i
 add wave -noupdate -group axi2mem /eth_tb/i_eth_rgmii_tx/i_axi2rom/state_d
@@ -66,7 +66,7 @@ add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/core_lsu_
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/ce_d
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/we_d
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/framing_sel
-add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/framing_rdata
+add wave -noupdate -group framing_top -radix hexadecimal /eth_tb/i_eth_rgmii_tx/eth_rgmii/framing_rdata
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/clk_int
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/rst_int
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/clk90_int
@@ -90,7 +90,7 @@ add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/tx_enable
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/mac_gmii_tx_en
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/mac_address
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/rx_dest_mac
-add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/tx_frame_addr
+add wave -noupdate -group framing_top -radix binary /eth_tb/i_eth_rgmii_tx/eth_rgmii/tx_frame_addr
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/tx_packet_length
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/axis_tx_frame_size
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/ce_d_dly
@@ -127,7 +127,7 @@ add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/rx_axis_t
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/tx_fcs_reg_rev
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/rx_fcs_reg_rev
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/rx_wr
-add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/douta
+add wave -noupdate -group framing_top -radix hexadecimal /eth_tb/i_eth_rgmii_tx/eth_rgmii/douta
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/tx_fcs_reg
 add wave -noupdate -group framing_top /eth_tb/i_eth_rgmii_tx/eth_rgmii/rx_fcs_reg
 add wave -noupdate -group dualmem_widen /eth_tb/i_eth_rgmii_tx/eth_rgmii/RAMB16_inst_tx/clka
@@ -172,6 +172,7 @@ add wave -noupdate -group asym_ram1 {/eth_tb/i_eth_rgmii_tx/eth_rgmii/RAMB16_ins
 add wave -noupdate -group asym_ram1 {/eth_tb/i_eth_rgmii_tx/eth_rgmii/RAMB16_inst_tx/genblk1[1]/asym_ram_tdp_read_first_inst/doB}
 add wave -noupdate -group asym_ram1 {/eth_tb/i_eth_rgmii_tx/eth_rgmii/RAMB16_inst_tx/genblk1[1]/asym_ram_tdp_read_first_inst/readA}
 add wave -noupdate -group asym_ram1 {/eth_tb/i_eth_rgmii_tx/eth_rgmii/RAMB16_inst_tx/genblk1[1]/asym_ram_tdp_read_first_inst/readB}
+add wave -noupdate -group asym_ram1 {/eth_tb/i_eth_rgmii_tx/eth_rgmii/RAMB16_inst_tx/genblk1[1]/asym_ram_tdp_read_first_inst/RAM}
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/clk
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/rst
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/s_axis_tdata
@@ -198,7 +199,7 @@ add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_so
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/mii_odd_next
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/mii_msn_reg
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/mii_msn_next
-add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/frame_ptr_reg
+add wave -noupdate -group axis_gmii_tx -radix hexadecimal /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/frame_ptr_reg
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/frame_ptr_next
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/gmii_txd_reg
 add wave -noupdate -group axis_gmii_tx /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/eth_mac_1g_rgmii_inst/eth_mac_1g_inst/axis_gmii_tx_inst/gmii_txd_next
@@ -276,12 +277,12 @@ add wave -noupdate -group tx_fifo /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/co
 add wave -noupdate -group tx_fifo /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/tx_fifo/read
 add wave -noupdate -group tx_fifo /eth_tb/i_eth_rgmii_tx/eth_rgmii/rgmii_soc1/core_inst/eth_mac_inst/tx_fifo/store_output
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {25 ns} 0} {{Cursor 2} {1 ns} 0}
+WaveRestoreCursors {{Cursor 2} {588 ns} 0} {{Cursor 3} {1862 ns} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 575
-configure wave -valuecolwidth 115
+configure wave -namecolwidth 240
+configure wave -valuecolwidth 112
 configure wave -justifyvalue left
-configure wave -signalnamewidth 0
+configure wave -signalnamewidth 1
 configure wave -snapdistance 10
 configure wave -datasetprefix 0
 configure wave -rowmargin 4
@@ -292,4 +293,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {45 ns}
+WaveRestoreZoom {464 ns} {712 ns}
