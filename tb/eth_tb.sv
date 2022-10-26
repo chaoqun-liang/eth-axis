@@ -130,6 +130,9 @@ module eth_tb;
       .phy_tx_clk_i    ( s_clk_125MHz_0    ) //0
       );
 
+   // high level functions -------------------------------------
+   fixture_eth fix();
+   
    
    // begin of simulation -------------------------------------
    initial begin
@@ -174,192 +177,70 @@ module eth_tb;
       repeat(10) @(posedge s_clk);
       s_rst_n <= 1; //disattivo il reset
       #tCK;
-      
-      axi_master_tx_drv.reset_master();
-      @(posedge s_clk);
 
-      
-      //Lunghezza del pacchetto 
-      aw_beat.ax_addr = 'h00000810; //Tx packet length
-      axi_master_tx_drv.send_aw(aw_beat);
-     
-      w_beat.w_data = 'h0000002E; //minimum frame size is 64Byte
-      w_beat.w_strb = 'b00001111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
+      //Reset master
+      fix.reset_master(axi_master_tx_drv);
       @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
-      @(posedge s_clk);
+      
+      //Lunghezza del pacchetto
+      fix.write_axi(axi_master_tx_drv,'h00000810,'h0000002E, 'h0f);
 
       repeat(5) @(posedge s_clk);
       
-      //RIEMPIMENTO BUFFER --------------------
-      //1
-      aw_beat.ax_addr = 'h00001000;
-      axi_master_tx_drv.send_aw(aw_beat);
       
-      w_beat.w_data = 'h1032207098001032; // 230100890702 2301, mac dest + inizio di mac source
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
+      //RIEMPIMENTO BUFFER ----------------------------------------------
       
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //1 --> 230100890702 2301, mac dest + inizio di mac source
+      fix.write_axi(axi_master_tx_drv,'h00001000,'h1032207098001032, 'hff);
       @(posedge s_clk);
 
-      //2
-      aw_beat.ax_addr = 'h00001008;
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h3210460020709800; // 00890702 0064 0123, fine mac source + length + payload
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //2 --> 00890702 0064 0123, fine mac source + length + payload
+      fix.write_axi(axi_master_tx_drv,'h00001008,'h3210460020709800, 'hff);
       @(posedge s_clk);
       
-      //3
-      aw_beat.ax_addr = 'h00001010;
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h4321FEDCBA987654; //456789ABCDEF1234 payload 
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
-     
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //3 --> 456789ABCDEF1234, payload
+      fix.write_axi(axi_master_tx_drv,'h00001010,'h4321FEDCBA987654, 'hff);
       @(posedge s_clk);
 
-      //4
-      aw_beat.ax_addr = 'h00001018;
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h65432FEDCBA98765; //payload
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
-     
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //4 --> 56789ABCDEF23456, payload
+      fix.write_axi(axi_master_tx_drv,'h00001018,'h65432FEDCBA98765, 'hff);
       @(posedge s_clk);
 
-      //5
-      aw_beat.ax_addr = 'h00001020;
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h9876543FEDCBA987; // payload
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
-     
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //5 --> 789ABCDEF3456789, payload
+      fix.write_axi(axi_master_tx_drv,'h00001020,'h9876543FEDCBA987, 'hff);
       @(posedge s_clk);
 
-      //6
-      aw_beat.ax_addr = 'h00001028;
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'hDCBA987654FEDCBA; // payload
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
-     
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //6 --> ABCDEF456789ABCD, payload
+      fix.write_axi(axi_master_tx_drv,'h00001028,'hDCBA987654FEDCBA, 'hff);
       @(posedge s_clk);
 
-      //7
-      aw_beat.ax_addr = 'h00001030;
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h876FEDCBA98765FE; // payload
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //7 --> EF56789ABCDEF678, payload
+      fix.write_axi(axi_master_tx_drv,'h00001030,'h876FEDCBA98765FE, 'hff);
       @(posedge s_clk);
 
-      //8
-      aw_beat.ax_addr = 'h00001038;
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'hFEDCBA987FEDCBA9; // paylaod
-      w_beat.w_strb = 'b11111111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //8 --> 9ABCDEF789ABCDEF, payload
+      fix.write_axi(axi_master_tx_drv,'h00001038,'hFEDCBA987FEDCBA9, 'hff);
       @(posedge s_clk);
 
-      
-      
-      //riempimento registri ---------------------------
+ 
+      //riempimento registri --------------------------------------------
 
       repeat(10) @(posedge s_clk)
         
-      //1
-      aw_beat.ax_addr = 'h00000800; //mac_address[31:0]
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h00890702;
-      w_beat.w_strb = 'b00001111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //1 --> mac_address[31:0]
+      fix.write_axi(axi_master_tx_drv,'h00000800,'h00890702, 'h0f);
       @(posedge s_clk);
       
-      //2 
-      aw_beat.ax_addr = 'h00000808; //{irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h00002301;
-      w_beat.w_strb = 'b00001111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
+      //2 --> {irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
+      fix.write_axi(axi_master_tx_drv,'h00000808,'h00002301, 'h0f);
       @(posedge s_clk);
 
-    /*  //3
-      aw_beat.ax_addr = 'h00000810; //Tx packet length
-      axi_master_tx_drv.send_aw(aw_beat);
-     
-      w_beat.w_data = 'h0000002E; //minimum frame size is 64Byte
-      w_beat.w_strb = 'b00001111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
+      //3 --> Rx frame check sequence register(read) and last register(write)
+      fix.write_axi(axi_master_tx_drv,'h00000828,'h00000008, 'h0f);
       @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
-      @(posedge s_clk);
-      */
+    
 
-      //4
-      aw_beat.ax_addr = 'h00000828; // Rx frame check sequence register(read) and last register(write)
-      axi_master_tx_drv.send_aw(aw_beat);
-      
-      w_beat.w_data = 'h00000008;
-      w_beat.w_strb = 'b00001111;
-      w_beat.w_last = 'b1;
-      
-      axi_master_tx_drv.send_w(w_beat);
-      @(posedge s_clk);
-      axi_master_tx_drv.recv_b(b_beat);
-      @(posedge s_clk);
-    
-    
-      
+      //fine simulazione ------------------------------------------------
       repeat (4500) @(posedge s_clk);
       
       done = 1;

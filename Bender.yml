@@ -40,3 +40,4 @@ sources:
   - rtl/rgmii_soc.sv
   - rtl/ssio_ddr_in.sv
   - tb/eth_tb.sv
+  - tb/fixture_eth.sv
