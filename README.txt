@@ -20,7 +20,7 @@ vsim eth_tb -t 1ns -coverage -voptargs="+acc +cover=bcesfx" &
 
 Per vedere le forme d'onda su Questa Sim:
 
-source ./scripts/eth_wave.do
+source ./scripts/wave.do
 
 
 Address map:

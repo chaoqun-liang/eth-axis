@@ -27,6 +27,7 @@ THE SOFTWARE.
 /*
  * FPGA core logic
  */
+
 module rgmii_core #
 (
 `ifdef GENESYSII
@@ -92,7 +93,7 @@ eth_mac_1g_rgmii_fifo #(
     .TARGET(TARGET),
     .IODDR_STYLE("IODDR"),
     .CLOCK_INPUT_STYLE("BUFR"),
-    .USE_CLK90("TRUE"),
+    .USE_CLK90("FALSE"), //TRUE 
     .ENABLE_PADDING(1),
     .MIN_FRAME_LENGTH(64),
     .TX_FIFO_ADDR_WIDTH(12),

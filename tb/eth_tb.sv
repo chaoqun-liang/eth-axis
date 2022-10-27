@@ -33,10 +33,12 @@ module eth_tb;
    
    //---------------------AXI drivers-----------------------
 
+   /*
    typedef logic [AW-1:0]   axi_addr_t;
    typedef logic [DW-1:0]   axi_data_t;
    typedef logic [DW/8-1:0] axi_strb_t;
    typedef logic [IW-1:0]   axi_id_t;
+    */
    
    AXI_BUS_DV
      #(
@@ -63,13 +65,13 @@ module eth_tb;
    axi_drv_t axi_master_tx_drv =  new(axi_master_tx_dv);
    axi_drv_t axi_master_rx_drv =  new(axi_master_rx_dv);
 
-   //beats
+  /* //beats
    axi_test::axi_ax_beat #(.AW(AW), .IW(IW), .UW(UW)) ar_beat = new();  
    axi_test::axi_r_beat  #(.DW(DW), .IW(IW), .UW(UW)) r_beat  = new();
    axi_test::axi_ax_beat #(.AW(AW), .IW(IW), .UW(UW)) aw_beat = new();
    axi_test::axi_w_beat  #(.DW(DW), .UW(UW))          w_beat  = new();
    axi_test::axi_b_beat  #(.IW(IW), .UW(UW))          b_beat  = new();
-   
+  */ 
    
    // ---------------------------- DUT -----------------------------
    //TX ETH_RGMII
@@ -194,8 +196,8 @@ module eth_tb;
       fix.write_axi(axi_master_tx_drv,'h00001000,'h1032207098001032, 'hff);
       @(posedge s_clk);
 
-      //2 --> 00890702 0064 0123, fine mac source + length + payload
-      fix.write_axi(axi_master_tx_drv,'h00001008,'h3210460020709800, 'hff);
+      //2 --> 00890702 002E 0123, fine mac source + length + payload
+      fix.write_axi(axi_master_tx_drv,'h00001008,'h3210E20020709800, 'hff);
       @(posedge s_clk);
       
       //3 --> 456789ABCDEF1234, payload
@@ -225,7 +227,8 @@ module eth_tb;
  
       //riempimento registri --------------------------------------------
 
-      repeat(10) @(posedge s_clk)
+      repeat(10) @(posedge s_clk);
+      
         
       //1 --> mac_address[31:0]
       fix.write_axi(axi_master_tx_drv,'h00000800,'h00890702, 'h0f);
@@ -240,8 +243,9 @@ module eth_tb;
       @(posedge s_clk);
     
 
-      //fine simulazione ------------------------------------------------
+      //fine simulazione -------------------------------------------------
       repeat (4500) @(posedge s_clk);
+
       
       done = 1;
      
