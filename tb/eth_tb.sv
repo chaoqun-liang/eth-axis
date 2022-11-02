@@ -32,13 +32,6 @@ module eth_tb;
    wire       eth_rx_rst_n;
    
    //---------------------AXI drivers-----------------------
-
-   /*
-   typedef logic [AW-1:0]   axi_addr_t;
-   typedef logic [DW-1:0]   axi_data_t;
-   typedef logic [DW/8-1:0] axi_strb_t;
-   typedef logic [IW-1:0]   axi_id_t;
-    */
    
    AXI_BUS_DV
      #(
@@ -65,13 +58,6 @@ module eth_tb;
    axi_drv_t axi_master_tx_drv =  new(axi_master_tx_dv);
    axi_drv_t axi_master_rx_drv =  new(axi_master_rx_dv);
 
-  /* //beats
-   axi_test::axi_ax_beat #(.AW(AW), .IW(IW), .UW(UW)) ar_beat = new();  
-   axi_test::axi_r_beat  #(.DW(DW), .IW(IW), .UW(UW)) r_beat  = new();
-   axi_test::axi_ax_beat #(.AW(AW), .IW(IW), .UW(UW)) aw_beat = new();
-   axi_test::axi_w_beat  #(.DW(DW), .UW(UW))          w_beat  = new();
-   axi_test::axi_b_beat  #(.IW(IW), .UW(UW))          b_beat  = new();
-  */ 
    
    // ---------------------------- DUT -----------------------------
    //TX ETH_RGMII
@@ -135,6 +121,9 @@ module eth_tb;
    // high level functions -------------------------------------
    fixture_eth fix();
    
+   wire [63:0] rx_read_data;
+   assign rx_read_data=axi_master_rx.r_data;
+   
    
    // begin of simulation -------------------------------------
    initial begin
@@ -184,19 +173,32 @@ module eth_tb;
       fix.reset_master(axi_master_tx_drv);
       @(posedge s_clk);
       
-      //Lunghezza del pacchetto
-      fix.write_axi(axi_master_tx_drv,'h00000810,'h0000002E, 'h0f);
+      //Lettura registri rx ------------------------------------------
+      fix.read_axi(axi_master_rx_drv, 'h0000000F); // first available buffer (static)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h000000F0); // current rx buffer (volatile)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00000F00); // last available rx buffer (static)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00001000); // Rx complete
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00002000); // Rx irq bit
+      @(posedge s_clk);
 
       repeat(5) @(posedge s_clk);
       
       
       //RIEMPIMENTO BUFFER ----------------------------------------------
       
-      //1 --> 230100890702 2301, mac dest + inizio di mac source
+     /* //Lunghezza del pacchetto
+      fix.write_axi(axi_master_tx_drv,'h00000810,'h0000002E, 'h0f);
+      repeat(5) @(posedge s_clk);*/
+      
+      //1 --> 230100890702 2301, mac dest + inizio di mac source 1032207098001032
       fix.write_axi(axi_master_tx_drv,'h00001000,'h1032207098001032, 'hff);
       @(posedge s_clk);
 
-      //2 --> 00890702 002E 0123, fine mac source + length + payload
+      //2 --> 00890702 002E 0123, fine mac source + length + payload 3210E20020709800
       fix.write_axi(axi_master_tx_drv,'h00001008,'h3210E20020709800, 'hff);
       @(posedge s_clk);
       
@@ -224,9 +226,9 @@ module eth_tb;
       fix.write_axi(axi_master_tx_drv,'h00001038,'hFEDCBA987FEDCBA9, 'hff);
       @(posedge s_clk);
 
- 
+   
       //riempimento registri --------------------------------------------
-
+      //TRASMISSIONE PACCHETTO 1
       repeat(10) @(posedge s_clk);
       
         
@@ -241,10 +243,67 @@ module eth_tb;
       //3 --> Rx frame check sequence register(read) and last register(write)
       fix.write_axi(axi_master_tx_drv,'h00000828,'h00000008, 'h0f);
       @(posedge s_clk);
-    
-
-      //fine simulazione -------------------------------------------------
+      
+      //Lunghezza del pacchetto
+      fix.write_axi(axi_master_tx_drv,'h00000810,'h0000002E, 'h0f);
+      repeat(5) @(posedge s_clk);
       repeat (4500) @(posedge s_clk);
+      
+      //Lettura registri rx ------------------------------------------
+      fix.read_axi(axi_master_rx_drv, 'h0000000F); // first available buffer (static)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h000000F0); // current rx buffer (volatile)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00000F00); // last available rx buffer (static)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00001000); // Rx complete
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00002000); // Rx irq bit
+      @(posedge s_clk);
+
+      repeat(5) @(posedge s_clk);
+      
+      // lettura buffer ricevitore ---------------------------------------
+      fix.read_axi(axi_master_rx_drv, 'h00004000); // Receive buffer
+      @(posedge s_clk);
+      
+      fix.read_axi(axi_master_rx_drv, 'h00004008); // Receive buffer
+      @(posedge s_clk);
+
+      fix.read_axi(axi_master_rx_drv, 'h00004010); // Receive buffer
+      @(posedge s_clk);
+
+      fix.read_axi(axi_master_rx_drv, 'h00004018); // Receive buffer
+      @(posedge s_clk);
+ 
+      fix.read_axi(axi_master_rx_drv, 'h00004020); // Receive buffer
+      @(posedge s_clk);
+
+      fix.read_axi(axi_master_rx_drv, 'h00004028); // Receive buffer
+      @(posedge s_clk);
+
+      fix.read_axi(axi_master_rx_drv, 'h00004030); // Receive buffer
+      @(posedge s_clk);
+
+      fix.read_axi(axi_master_rx_drv, 'h00004038); // Receive buffer
+      @(posedge s_clk);
+      repeat(5) @(posedge s_clk);
+      
+       //Lettura registri rx ------------------------------------------
+      fix.read_axi(axi_master_rx_drv, 'h0000000F); // first available buffer (static)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h000000F0); // current rx buffer (volatile)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00000F00); // last available rx buffer (static)
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00001000); // Rx complete
+      @(posedge s_clk);
+      fix.read_axi(axi_master_rx_drv, 'h00002000); // Rx irq bit
+      @(posedge s_clk);
+
+      repeat(5) @(posedge s_clk);
+      //fine simulazione -------------------------------------------------
+      repeat (100) @(posedge s_clk);
 
       
       done = 1;
