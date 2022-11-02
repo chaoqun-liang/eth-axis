@@ -278,18 +278,21 @@ always @(posedge clk_int)
 	    begin
 	       tx_frame_addr <= 'b0;
 	    end
-	  if (tx_axis_tready)
+	  else // davide added else statement...
 	    begin
-	       tx_frame_addr <= tx_frame_addr + 1;
-	       tx_axis_tlast <= (tx_frame_addr == tx_packet_length-2) & tx_axis_tvalid_dly;
+	       if (tx_axis_tready)
+		 begin
+		    tx_frame_addr <= tx_frame_addr + 1;
+		    tx_axis_tlast <= (tx_frame_addr == tx_packet_length-2) & tx_axis_tvalid_dly;
+		 end
 	    end
           tx_axis_tvalid <= tx_axis_tvalid_dly;
 	  if (tx_enable_old)
-	      tx_axis_tvalid_dly <= 1'b1;
+	    tx_axis_tvalid_dly <= 1'b1;
 	  else if (~tx_axis_tlast)
-	      tx_axis_tvalid_dly <= 1'b0;
-      end
- 
+	    tx_axis_tvalid_dly <= 1'b0;
+       end
+   
    always @(posedge clk_int)
      if (rst_int)
        begin
