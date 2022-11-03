@@ -41,3 +41,4 @@ sources:
   - rtl/ssio_ddr_in.sv
   - tb/eth_tb.sv
   - tb/fixture_eth.sv
+  - rtl/IN22FDX_R2PV_WFVG_W00512B032M04C128.v

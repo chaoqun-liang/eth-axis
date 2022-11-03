@@ -2,7 +2,6 @@
 `timescale 1 ns/1 ps
 
 `include "axi/assign.svh"
-//`include "axi/typedef.svh"
 
 module fixture_eth();
    
@@ -45,9 +44,9 @@ module fixture_eth();
       input axi_addr_t raddr;
 
       ar_beat.ax_addr  = raddr;
-      r_beat.r_last = 'b1;
       axi_master_drv.send_ar(ar_beat);
       axi_master_drv.recv_r(r_beat);
+      $display("Read data: %x", r_beat.r_data);
       
    endtask // read_axi
    
@@ -67,6 +66,7 @@ module fixture_eth();
 
       axi_master_drv.send_aw(aw_beat);
       axi_master_drv.send_w(w_beat);
+      $display("Written data: %x", w_beat.w_data);
       axi_master_drv.recv_b(b_beat);
       
    endtask; // write_axi

@@ -190,9 +190,9 @@ module eth_tb;
       
       //RIEMPIMENTO BUFFER ----------------------------------------------
       
-     /* //Lunghezza del pacchetto
+       //Lunghezza del pacchetto
       fix.write_axi(axi_master_tx_drv,'h00000810,'h0000002E, 'h0f);
-      repeat(5) @(posedge s_clk);*/
+      repeat(5) @(posedge s_clk);
       
       //1 --> 230100890702 2301, mac dest + inizio di mac source 1032207098001032
       fix.write_axi(axi_master_tx_drv,'h00001000,'h1032207098001032, 'hff);
@@ -231,7 +231,6 @@ module eth_tb;
       //TRASMISSIONE PACCHETTO 1
       repeat(10) @(posedge s_clk);
       
-        
       //1 --> mac_address[31:0]
       fix.write_axi(axi_master_tx_drv,'h00000800,'h00890702, 'h0f);
       @(posedge s_clk);
@@ -244,10 +243,11 @@ module eth_tb;
       fix.write_axi(axi_master_tx_drv,'h00000828,'h00000008, 'h0f);
       @(posedge s_clk);
       
-      //Lunghezza del pacchetto
+     /* //Lunghezza del pacchetto
       fix.write_axi(axi_master_tx_drv,'h00000810,'h0000002E, 'h0f);
-      repeat(5) @(posedge s_clk);
-      repeat (4500) @(posedge s_clk);
+      repeat(5) @(posedge s_clk);*/
+      
+      repeat (5500) @(posedge s_clk);
       
       //Lettura registri rx ------------------------------------------
       fix.read_axi(axi_master_rx_drv, 'h0000000F); // first available buffer (static)
@@ -289,7 +289,7 @@ module eth_tb;
       @(posedge s_clk);
       repeat(5) @(posedge s_clk);
       
-       //Lettura registri rx ------------------------------------------
+      //Lettura registri rx ------------------------------------------
       fix.read_axi(axi_master_rx_drv, 'h0000000F); // first available buffer (static)
       @(posedge s_clk);
       fix.read_axi(axi_master_rx_drv, 'h000000F0); // current rx buffer (volatile)

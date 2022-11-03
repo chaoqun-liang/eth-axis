@@ -44,11 +44,13 @@ module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
    
    always @(posedge clka)
      begin
-	addra_dly <= addra;
-	addrb_dly <= addrb;
+	      addra_dly <= addra;
+	      addrb_dly <= addrb;
      end
 
 `ifdef RAMB16
+
+   //FPGA XILINX MEM
     
    generate for (r = 0; r < 8; r=r+1)
      RAMB16_S9_S36
@@ -77,6 +79,50 @@ module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
 
 `else // !`ifdef RAMB16
 
+/* `ifdef GF22_BEHAV
+   // RAM BEHAVIOURAL GF22
+  /* generate for (r = 0; r < 8; r=r+1)
+        IN22FDX_R2PV_WFVG_W00512B032M04C128 GF22_inst
+         (
+         `ifdef IVCS_PG
+          .VDD(),
+          .VCS(),
+          .VBN(),
+          .VBP(),
+          .VSS(),
+         `endif
+
+          .CLK_A(clka),    //Clock Input for READ Port
+          .CLK_B(clkb),    //Clock Input for WRITE Port
+          .CEN_A(en0[r]),  //Port-A chip enable (active low)
+          .CEN_B(en1[r]),  //Port-B chip enable (active low)
+          .DEEPSLEEP(),    //Asynchronous Deep Sleep enable
+          .POWERGATE(),    //Asynchronous Power Gating enable
+          .AW_A(),         //[6:0] Port-A Address Word line inputs (AW_A[0] = LSB)
+          .AC_A(),         //[1:0] Port-A Address Column inputs (AC_A[0] = LSB)
+          .AW_B(),         //[6:0] Port-B Address Word line inputs (AW_B[0] = LSB)
+          .AC_B(),         //[1:0] Port-B Address Column inputs (AC_B[0] = LSB)
+          .D(),            //[31:0] Port-B Data Inputs during write operation 
+          .BW(),           //[31:0] Port-B Bit Write Input to enable independent data bit write 
+          .T_LOGIC(),      //Logic Test input
+          .MA_SAWL(1'b0),  //Margin Adjust: Sense-Amp timing and Word line pulse width.
+          .MA_WL(1'b0),    //Margin Adjust: Word line pulse width only
+          .MA_WRAS(1'b0),  //Margin Adjust: Write Assist timings.
+          .MA_WRASD(1'b0), //Margin Adjust: Write Assist function disable
+          .MA_TPA(1'b0),   //Margin Adjust Port A
+          .MA_TPB(1'b0),   //Margin Adjust Port B
+          .RWE(),          //Redundant WL Enable inputs
+          .RWFA(),         //[5:0] Redundant WL Fuse Addresses that decode redundant WL replacements in the 128-WL bank
+          .Q(),            //[31:0] Port-A Data Output pins
+          .OBSV_DBW(),     //[31:0] function of (D & BW)
+          .OBSV_CTL_A(),   //function of (~AW_A & AC_A & ~CEN_A & ~DEEPSLEEP & ~POWERGATE)
+          .OBSV_CTL_B()    //function of (~AW_B & AC_B & ~CEN_B)
+          );
+
+
+   
+ `elif*/
+   // BEHAVIOURAL RAMB10 XILINX
    generate for (r = 0; r < 8; r=r+1)
      asym_ram_tdp_read_first
        #(
@@ -104,7 +150,9 @@ module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
         );
    
    endgenerate
-  
-`endif
+
+// `endif  
+`endif // !`ifdef RAMB16
+
    
 endmodule // dualmem
