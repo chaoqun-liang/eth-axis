@@ -280,7 +280,7 @@ always @(posedge clk_int)
 	          end
 	        else // davide added else statement...
 	          begin
-	             if (tx_axis_tready)
+	             if (tx_axis_tready & tx_axis_tvalid)
 		             begin
 		                tx_frame_addr <= tx_frame_addr + 1;
 		                tx_axis_tlast <= (tx_frame_addr == tx_packet_length-2) & tx_axis_tvalid_dly;
