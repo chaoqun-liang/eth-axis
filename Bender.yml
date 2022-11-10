@@ -42,3 +42,5 @@ sources:
   - tb/eth_tb.sv
   - tb/fixture_eth.sv
   - rtl/IN22FDX_R2PV_WFVG_W00512B032M04C128.v
+  - rtl/GF22_wrap_tx.sv
+  - rtl/GF22_wrap_rx.sv

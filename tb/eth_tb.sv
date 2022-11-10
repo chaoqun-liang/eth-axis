@@ -129,12 +129,12 @@ module eth_tb;
    initial begin
       data_array[0] = 64'h1032207098001032; //1 --> 230100890702 2301, mac dest + inizio di mac source
       data_array[1] = 64'h3210E20020709800; //2 --> 00890702 002E 0123, fine mac source + length + payload
-      data_array[2] = 64'h4321FEDCBA987654; // payload
-      data_array[3] = 64'h65432FEDCBA98765;
-      data_array[4] = 64'h9876543FEDCBA987;
-      data_array[5] = 64'hDCBA987654FEDCBA;
-      data_array[6] = 64'h876FEDCBA98765FE;
-      data_array[7] = 64'h65432FEDCBA98765;
+      data_array[2] = 64'h1716151413121110; // payload
+      data_array[3] = 64'h2726252423222120;
+      data_array[4] = 64'h3736353433323130;
+      data_array[5] = 64'h4746454443424140;
+      data_array[6] = 64'h5756555453525150;
+      data_array[7] = 64'h6766656463626160;
    end
 
    // initialization read addresses
@@ -165,7 +165,8 @@ module eth_tb;
 
    event       tx_complete;
    logic       en_rx_memw;
-   assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].asym_ram_tdp_read_first_inst.enaB;
+  // assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].asym_ram_tdp_read_first_inst.enaB;
+   assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].GF22_wrap_rx_inst.enaB;
    
    
    // ---------------------- CLOCK GENERATION ------------------------
@@ -221,13 +222,16 @@ module eth_tb;
       // Reset axi master
       fix.reset_master(axi_master_tx_drv);
       repeat(5) @(posedge s_clk);
+
+      #3000ns;
+      
       
       // Packet length
-      fix.write_axi(axi_master_tx_drv,'h00000810,'h00000030, 'h0f);
+      fix.write_axi(axi_master_tx_drv,'h00000810,'h00000040, 'h0f);
       repeat(5) @(posedge s_clk);
       
       // TX BUFFER FILLING ----------------------------------------------
-      for(int j=0; j<7; j++) begin
+      for(int j=0; j<8; j++) begin
          fix.write_axi(axi_master_tx_drv, write_addr[j], data_array[j], 'hff);
          @(posedge s_clk);
       end
@@ -263,7 +267,7 @@ module eth_tb;
       while(1) begin
          wait(tx_complete.triggered);
          
-         for(int i=0; i<7; i++) begin
+         for(int i=0; i<8; i++) begin
             fix.read_axi(axi_master_rx_drv, read_addr[i]);
             if(rx_read_data == data_array[i]) $display("Dato corretto");
             else begin 
@@ -271,7 +275,7 @@ module eth_tb;
                $stop();
             end
          end
-         
+         $stop();
       end
    end
    

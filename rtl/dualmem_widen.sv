@@ -26,7 +26,7 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
 `endif
 
 `ifdef RAMB16
-   
+   //FPGA XILINX MEM
    generate for (r = 0; r < 2; r=r+1)
      RAMB16_S9_S36
      RAMB16_S9_S36_inst
@@ -54,7 +54,29 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
 
 `else // !`ifdef RAMB16
 
-   generate for (r = 0; r < 2; r=r+1)
+ //`ifdef GF22_BEHAV
+   // RAM BEHAVIOURAL GF22
+   
+    generate for (r = 0; r < 2; r=r+1)
+      
+        GF22_wrap_tx GF22_wrap_tx_inst
+          (
+           .clkA  ( clka             ),
+           .clkB  ( clkb             ),
+           .weB   ( web[r]           ),
+           .enaA  ( ena              ),
+           .enaB  ( enb              ),
+           .addrA ( addra            ),
+           .addrB ( addrb            ),
+           .diB   ( dinb[r*32 +: 32] ), // port B is write only
+           .doA   ( douta[r*8 +: 8]  )  // port A is read only
+           );
+       
+     endgenerate
+   
+ //`elif
+     // BEHAVIOURAL RAMB16 XILINX
+  /* generate for (r = 0; r < 2; r=r+1)
      
      asym_ram_tdp_read_first
        #(
@@ -68,21 +90,24 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
      asym_ram_tdp_read_first_inst
        (
         .clkA   ( clkb                     ),     // Port A Clock
-        .doA    ( doutb[r*32 +: 32]          ),     // Port A 8-bit Data Output
-        .addrA  ( addrb                    ),     // Port A 11-bit Address Input
-        .diA    ( dinb[r*32 +: 32]           ),     // Port A 8-bit Data Input
+        .doA    ( doutb[r*32 +: 32]        ),     // Port A 32-bit Data Output
+        .addrA  ( addrb                    ),     // Port A 9-bit Address Input
+        .diA    ( dinb[r*32 +: 32]         ),     // Port A 32-bit Data Input
         .enaA   ( enb                      ),     // Port A RAM Enable Input
         .weA    ( web[r]                   ),     // Port A Write Enable Input
         .clkB   ( clka                     ),     // Port B Clock
-        .doB    ( douta[r*8 +: 8]        ),     // Port B 32-bit Data Output
-        .addrB  ( addra                    ),     // Port B 9-bit Address Input
-        .diB    ( dina[r*8 +: 8]         ),     // Port B 32-bit Data Input
+        .doB    ( douta[r*8 +: 8]          ),     // Port B 8-bit Data Output
+        .addrB  ( addra                    ),     // Port B 11-bit Address Input
+        .diB    ( dina[r*8 +: 8]           ),     // Port B 8-bit Data Input
         .enaB   ( ena                      ),     // Port B RAM Enable Input
         .weB    ( wea[r]                   )      // Port B Write Enable Input
         );
       
-   endgenerate
+   endgenerate*/
    
-`endif
+// `endif //  `ifdef GF22_BEHAV
+   
+`endif // !`ifdef RAMB16
+   
    
 endmodule // dualmem
