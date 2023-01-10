@@ -59,17 +59,17 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
    
     generate for (r = 0; r < 2; r=r+1)
       
-        GF22_wrap_tx GF22_wrap_tx_inst
+        Block_RAM Block_RAM_inst
           (
-           .clkA  ( clka             ),
-           .clkB  ( clkb             ),
-           .weB   ( web[r]           ),
-           .enaA  ( ena              ),
-           .enaB  ( enb              ),
-           .addrA ( addra            ),
-           .addrB ( addrb            ),
-           .diB   ( dinb[r*32 +: 32] ), // port B is write only
-           .doA   ( douta[r*8 +: 8]  )  // port A is read only
+           .clkA_i  ( clka             ),
+           .clkB_i  ( clkb             ),
+           .weB_i   ( web[r]           ),
+           .enA_i  ( ena              ),
+           .enB_i  ( enb              ),
+           .addrA_i ( addra            ),
+           .addrB_i ( addrb            ),
+           .dB_i   ( dinb[r*32 +: 32] ), // port B is write only
+           .dA_o   ( douta[r*8 +: 8]  )  // port A is read only
            );
        
      endgenerate
