@@ -25,6 +25,7 @@ sources:
   - rtl/axis_async_fifo.sv
   - rtl/axis_gmii_rx.sv
   - rtl/axis_gmii_tx.sv
+  - rtl/Block_RAM.sv
   - rtl/dualmem_widen8.sv
   - rtl/dualmem_widen.sv
   - rtl/eth_mac_1g_rgmii_fifo.sv
@@ -42,5 +43,4 @@ sources:
   - tb/eth_tb.sv
   - tb/fixture_eth.sv
   - rtl/IN22FDX_R2PV_WFVG_W00512B032M04C128.v
-  - rtl/GF22_wrap_tx.sv
   - rtl/GF22_wrap_rx.sv

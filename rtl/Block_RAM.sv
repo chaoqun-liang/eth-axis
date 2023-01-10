@@ -8,17 +8,16 @@ module Block_RAM
     input logic        enaB_i,
     input logic [9:0] addrA_i,
     input logic [9:0]  addrB_i,
-    input logic [15:0] dB_i // port B is write only
-    
+    input logic [63:0] dB_i, // port B is write only
     output logic [15:0] dA_o // port A is read only
    );
 
-   logic [15:0] ram [1023:0];
+   logic [63:0] ram [1023:0];
 
 always_ff @(posedge clkA_i) begin
    if (enaA_i) begin
       if (weB_i)
-         ram[addrA] <= dB_i;
+         ram[addrA_i] <= dB_i;
    end
 end
 

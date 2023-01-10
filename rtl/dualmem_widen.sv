@@ -64,8 +64,8 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
            .clkA_i  ( clka             ),
            .clkB_i  ( clkb             ),
            .weB_i   ( web[r]           ),
-           .enA_i  ( ena              ),
-           .enB_i  ( enb              ),
+           .enaA_i  ( ena              ),
+           .enaB_i  ( enb              ),
            .addrA_i ( addra            ),
            .addrB_i ( addrb            ),
            .dB_i   ( dinb[r*32 +: 32] ), // port B is write only

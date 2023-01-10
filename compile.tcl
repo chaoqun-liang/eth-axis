@@ -297,12 +297,13 @@ if {[catch {vlog -incr -sv \
     -suppress 2583 \
     +define+TARGET_SIMULATION \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/include" \
+    "+incdir+$ROOT/include" \
     "$ROOT/rtl/asym_ram_sdp_read_wider.v" \
     "$ROOT/rtl/axis_async_fifo.sv" \
     "$ROOT/rtl/axis_gmii_rx.sv" \
     "$ROOT/rtl/axis_gmii_tx.sv" \
+    "$ROOT/rtl/Block_RAM.sv" \
     "$ROOT/rtl/dualmem_widen8.sv" \
     "$ROOT/rtl/dualmem_widen.sv" \
     "$ROOT/rtl/eth_mac_1g_rgmii_fifo.sv" \
@@ -320,7 +321,6 @@ if {[catch {vlog -incr -sv \
     "$ROOT/tb/eth_tb.sv" \
     "$ROOT/tb/fixture_eth.sv" \
     "$ROOT/rtl/IN22FDX_R2PV_WFVG_W00512B032M04C128.v" \
-    "$ROOT/rtl/GF22_wrap_tx.sv" \
     "$ROOT/rtl/GF22_wrap_rx.sv"
 }]} {return 1}
 return 0
