@@ -59,7 +59,7 @@ module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dout
    
     generate for (r = 0; r < 2; r=r+1)
       
-        GF22_wrap_tx GF22_wrap_tx_inst
+        mem_wrap mem_wrap_inst
           (
            .clkA  ( clka             ),
            .clkB  ( clkb             ),

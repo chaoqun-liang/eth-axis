@@ -228,8 +228,8 @@ if {[catch {vlog -incr -sv \
     -suppress 2583 \
     +define+TARGET_SIMULATION \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/common_cells-b0df48edcf9e08ec/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/common_cells-b0df48edcf9e08ec/include" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_pkg.sv" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_intf.sv" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_atop_filter.sv" \
@@ -272,8 +272,8 @@ if {[catch {vlog -incr -sv \
     -suppress 2583 \
     +define+TARGET_SIMULATION \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/common_cells-b0df48edcf9e08ec/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/common_cells-b0df48edcf9e08ec/include" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_sim_mem.sv" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_test.sv"
 }]} {return 1}

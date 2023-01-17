@@ -1,5 +1,5 @@
 
-module GF22_wrap_tx
+module mem_wrap
    (
     input logic        clkA,
     input logic        clkB,
@@ -73,15 +73,15 @@ module GF22_wrap_tx
 // your code
    simple_dual_two_clocks simple_inst
      (
-      .clka(clkA),        // Clock Input for READ Port
-      .clkb(clkB),        // Clock Input for WRITE Port
+      .clka(clkB),        // Clock Input for READ Port
+      .clkb(clkA),        // Clock Input for WRITE Port
       .ena(enaB),        // Port-A chip enable (active low)
       .enb(enaA),        // Port-B chip enable (active low)  
       .wea(weB),
-      .addra(addrB[10:2]),
-      .addrb(addrA[8:0]),
+      .addra(addrB[8:0]),
+      .addrb(addrA[10:2]),
       .da_i(diB),
-      .db_o(read_data) 
+      .db_o() 
       );
    `endif
    
