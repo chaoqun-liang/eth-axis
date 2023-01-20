@@ -228,8 +228,8 @@ if {[catch {vlog -incr -sv \
     -suppress 2583 \
     +define+TARGET_SIMULATION \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/include" \
     "+incdir+$ROOT/.bender/git/checkouts/common_cells-b0df48edcf9e08ec/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/include" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_pkg.sv" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_intf.sv" \
     "$ROOT/.bender/git/checkouts/axi-217aca5e98bdee08/src/axi_atop_filter.sv" \
@@ -303,7 +303,7 @@ if {[catch {vlog -incr -sv \
     "$ROOT/rtl/axis_async_fifo.sv" \
     "$ROOT/rtl/axis_gmii_rx.sv" \
     "$ROOT/rtl/axis_gmii_tx.sv" \
-    "$ROOT/rtl/mem_wrap.sv" \
+    "$ROOT/rtl/mem_wrap_tx.sv" \
     "$ROOT/rtl/dualmem_widen8.sv" \
     "$ROOT/rtl/dualmem_widen.sv" \
     "$ROOT/rtl/eth_mac_1g_rgmii_fifo.sv" \
@@ -321,7 +321,7 @@ if {[catch {vlog -incr -sv \
     "$ROOT/tb/eth_tb.sv" \
     "$ROOT/tb/fixture_eth.sv" \
     "$ROOT/rtl/IN22FDX_R2PV_WFVG_W00512B032M04C128.v" \
-    "$ROOT/rtl/simple_dual_two_clocks.sv" \
+    "$ROOT/rtl/simple_dual_two_clocks.v" \
     "$ROOT/rtl/GF22_wrap_rx.sv"
 }]} {return 1}
 return 0
