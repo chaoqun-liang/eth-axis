@@ -77,7 +77,7 @@ module mem_wrap_tx
       .enaA(enaA),
       .weA(4'b0000),
       .addrA(addrA[10:2]),
-      .dinA(),
+      .dinA(32'h00000000),
       .doutA(read_data),
       .clkB(clkB),
       .enaB(enaB),
@@ -88,4 +88,4 @@ module mem_wrap_tx
       );
    `endif
    
-endmodule // GF22_wrap_tx
+endmodule // mem_wrap_tx

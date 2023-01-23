@@ -166,7 +166,7 @@ module eth_tb;
    event       tx_complete;
    logic       en_rx_memw;
   // assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].asym_ram_tdp_read_first_inst.enaB;
-   assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].GF22_wrap_rx_inst.enaB;
+   assign en_rx_memw = i_eth_rgmii_rx.eth_rgmii.RAMB16_inst_rx.genblk1[0].mem_wrap_rx_inst.enaB;
    
    
    // ---------------------- CLOCK GENERATION ------------------------

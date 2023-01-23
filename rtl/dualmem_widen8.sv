@@ -82,7 +82,7 @@ module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
    // RAM BEHAVIOURAL GF22
    generate for (r = 0; r < 8; r=r+1)
    
-   GF22_wrap_rx GF22_wrap_rx_inst
+   mem_wrap_rx mem_wrap_rx_inst
    (
     .clkA(clkb),
     .clkB(clka),
