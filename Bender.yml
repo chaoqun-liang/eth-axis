@@ -12,6 +12,8 @@ dependencies:
   axi_mem_if : { git: git@github.com:pulp-platform/axi_mem_if.git, version: 0.2.1 }
   axi : { git: "git@github.com:pulp-platform/axi.git", version: 0.36.0 }
   common_verification : { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
+  register_interface : { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.8 }
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
 
 export_include_dirs:
   - include
@@ -21,6 +23,8 @@ sources:
   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
   # levels 1 and 0, etc. Files within a level are ordered alphabetically.
   # Level 0
+  - rtl/eth_framing_reg/eth_framing_reg_pkg.sv
+  - rtl/eth_framing_reg/eth_framing_reg_top.sv
   - rtl/asym_ram_sdp_read_wider.v
   - rtl/axis_async_fifo.sv
   - rtl/axis_gmii_rx.sv

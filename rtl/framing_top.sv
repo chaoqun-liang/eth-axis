@@ -5,6 +5,7 @@
 `endif
 
 module framing_top
+  import eth_framing_reg_pkg::*;
   (
   input wire 	      msoc_clk,
   input wire [14:0]   core_lsu_addr,
@@ -39,7 +40,10 @@ module framing_top
   output reg 	      phy_mdio_oe,
   output wire 	      phy_mdc,
 
-  output reg 	      eth_irq
+  output reg 	      eth_irq,
+
+  // configuration (register interface)
+  REG_BUS.in  regbus_slave
    );
 
 // obsolete signals to be removedphy_
@@ -54,7 +58,7 @@ logic [10:0] tx_frame_addr, rx_length_axis[0:7], tx_packet_length;
 logic [12:0] axis_tx_frame_size;
 logic        ce_d_dly, avail;
 logic [63:0] framing_rdata_pkt, framing_wdata_pkt;
-logic [3:0] tx_enable_dly, firstbuf, nextbuf, lastbuf;
+logic [3:0] firstbuf, nextbuf, lastbuf;
 logic [2:0] last;
    
 reg        byte_sync, sync, irq_en, tx_busy;
@@ -86,6 +90,22 @@ reg        byte_sync, sync, irq_en, tx_busy;
         * AXIS Status
         */
          wire [31:0] tx_fcs_reg_rev, rx_fcs_reg_rev;
+
+eth_framing_reg_pkg::eth_framing_reg2hw_t reg2hw; // Read from HW
+eth_framing_reg_pkg::eth_framing_hw2reg_t hw2reg; // Write from HW
+
+assign mac_address = {reg2hw.config1.upper_mac_address, reg2hw.config0.q}; // combine upper and lower mac address from registers
+assign cooked = reg2hw.config1.cooked.q;
+assign loopback = reg2hw.config1.loopback.q;
+assign spare = reg2hw.config1.spare.q;
+assign promiscuous = reg2hw.config1.promiscuous.q;
+assign irq_en = reg2hw.config1.irq_en.q;
+assign tx_packet_length = reg2hw.config2.tx_packet_length.q;
+assign phy_mdclk = reg2hw.config2.phy_mdclk.q;
+assign phy_mdio_o = reg2hw.config2.phy_mdio_o.q;
+assign phy_mdio_oe = reg2hw.config2.phy_mdio_oe.q;
+assign lastbuf = reg2hw.config2.lastbuf.q;
+assign firstbuf = reg2hw.config2.firstbuf.q;
    
    always @(posedge clk_int)
      if (rst_int == 1'b1)
@@ -154,22 +174,9 @@ always @(posedge msoc_clk)
   if (rst_int)
     begin
     core_lsu_addr_dly <= 0;
-    mac_address <= 48'H230100890702;
-    tx_packet_length <= 0;
-    tx_enable_dly <= 0;
-    cooked <= 1'b0;
-    loopback <= 1'b0;
-    spare <= 4'b0;
-    promiscuous <= 1'b0;
-    phy_mdio_oe <= 1'b0;
-    phy_mdio_o <= 1'b0;
-    phy_mdclk <= 1'b0;
     sync <= 1'b0;
-    firstbuf <= 4'b0;
-    lastbuf <= 4'b0;
     nextbuf <= 4'b0;
     eth_irq <= 1'b0;
-    irq_en <= 1'b0;
     ce_d_dly <= 1'b0;
     tx_busy <= 1'b0;
     avail = 1'b0;         
@@ -180,20 +187,10 @@ always @(posedge msoc_clk)
     ce_d_dly <= ce_d;
     avail = nextbuf != firstbuf;
     eth_irq <= avail & irq_en; // make eth_irq go away immediately if irq_en is low
-    if (framing_sel&we_d&(&core_lsu_be[3:0])&(core_lsu_addr[14:11]==4'b0001))
-      case(core_lsu_addr[6:3])
-        0: mac_address[31:0] <= core_lsu_wdata;
-        1: {irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]} <= core_lsu_wdata;
-        2: begin tx_enable_dly <= 10; tx_packet_length <= core_lsu_wdata; end /* tx payload size */
-        3: begin tx_enable_dly <= 0; tx_packet_length <= 0; end
-        4: begin {phy_mdio_oe,phy_mdio_o,phy_mdclk} <= core_lsu_wdata; end
-        5: begin lastbuf <= core_lsu_wdata[3:0]; end
-        6: begin firstbuf <= core_lsu_wdata[3:0]; end
-        default:;
-      endcase
+
        if ((last > 0) && ~sync)
          begin
-         // check broadcast/multicast address
+         // check: isMulticastRange || isBroadcast (ff:ff:ff:ff:ff) || isFrameAdresssedToOurMacAddress || isPromiscous (store all frames)
 	     sync <= (rx_dest_mac[47:24]==24'h01005E) | (&rx_dest_mac) | (mac_address == rx_dest_mac) | promiscuous;
          end
        else if (!last)
@@ -201,18 +198,25 @@ always @(posedge msoc_clk)
             if (sync) nextbuf <= nextbuf + 1'b1;
             sync <= 1'b0;
          end
-       if (mac_gmii_tx_en && tx_enable_i)
-         begin
-            tx_enable_dly <= 0;
-         end
-       else if (1'b1 == |tx_enable_dly)
+
+       if (1'b1 == |reg2hw.config2.tx_enable_dly.q)
          begin
          tx_busy <= 1'b1;
-         tx_enable_dly <= tx_enable_dly + !(&tx_enable_dly);
          end
        else if (~mac_gmii_tx_en)
          tx_busy <= 1'b0;         
     end
+
+always_comb begin
+  hw2reg.config2.tx_enable_dly.de = 0;
+  if (mac_gmii_tx_en && tx_enable_i) begin
+    hw2reg.config2.tx_enable_dly.de = 1;
+    hw2reg.config2.tx_enable_dly.d = 4'b0000;
+  end else if (1'b1 == |reg2hw.config2.tx_enable_dly.q) begin
+    hw2reg.config2.tx_enable_dly.de = 1;
+    hw2reg.config2.tx_enable_dly.d = reg2hw.config2.tx_enable_dly.q + !(&reg2hw.config2.tx_enable_dly.q);
+  end
+end
 
 always @(posedge clk_int)
   if (rst_int)
@@ -225,7 +229,7 @@ always @(posedge clk_int)
          begin
             tx_enable_i <= 1'b0;
          end
-       else if (1'b1 == &tx_enable_dly)
+       else if (1'b1 == &reg2hw.config2.tx_enable_dly.q)
          tx_enable_i <= 1'b1;
     end
    
@@ -313,6 +317,18 @@ always @(posedge clk_int)
 	        rx_addr_axis <= 'b0;
             end
       end
+
+
+eth_framing_reg_top_intf framing_reg
+  (
+    .clk_i    (msoc_clk),
+    .rst_ni   (~rst_int),
+    .regbus_slave(regbus_slave),
+    .reg2hw   (reg2hw),
+    .hw2reg   (hw2reg),
+    .devmode_i(1'b1)
+);
+
  
 rgmii_soc rgmii_soc1
   (
@@ -388,7 +404,7 @@ xlnx_ila_3 eth_ila_clk_msoc (
 	.probe0(sync),
 	.probe1(avail),
         .probe2(nextbuf),
-        .probe3(tx_enable_dly),
+        .probe3(reg2hw.config2.tx_enable_dly.q),
         .probe4(tx_busy)
 );
 `endif

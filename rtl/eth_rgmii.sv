@@ -23,8 +23,9 @@ module eth_rgmii
     output wire       eth_rst_n ,
     input logic       phy_tx_clk_i,
 
-    output reg        eth_irq 
-    
+    output reg        eth_irq,
+
+    REG_BUS.in  regbus_slave // Configuration interface
     );
     
    logic 		      eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
@@ -87,7 +88,9 @@ module eth_rgmii
    .phy_mdio_o(eth_mdio_o),   // MDIO
    .phy_mdio_oe(eth_mdio_oe), // MDIO
    
-   .eth_irq(eth_irq)
+   .eth_irq(eth_irq),
+
+   .regbus_slave  (regbus_slave) // Configuration Interface
    );
    
 

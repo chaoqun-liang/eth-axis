@@ -1,7 +1,7 @@
 
 `timescale 1 ns/1 ps
 `include "axi/assign.svh"
-
+import reg_test::*;
 
 module eth_tb;
 
@@ -13,6 +13,9 @@ module eth_tb;
    localparam tCK    = 1ns;
    localparam tCK200 = 5ns;
    localparam tCK125 = 8ns;
+
+  localparam int unsigned RegBusDW = 32;
+  localparam int unsigned RegBusAW = 4;
    
    logic s_clk           = 0;
    logic s_clk_200MHz    = 0;
@@ -58,6 +61,28 @@ module eth_tb;
    axi_drv_t axi_master_tx_drv =  new(axi_master_tx_dv);
    axi_drv_t axi_master_rx_drv =  new(axi_master_rx_dv);
 
+   //------------------------ REG BUS (Configuration) -------------------------- 
+
+   REG_BUS #(
+     .DATA_WIDTH(RegBusDW),
+     .ADDR_WIDTH(RegBusAW)
+    ) reg_bus_mst_tx (.clk_i(s_clk));
+
+   logic reg_tx_error;
+
+   REG_BUS #(
+     .DATA_WIDTH(RegBusDW),
+     .ADDR_WIDTH(RegBusAW)
+    ) reg_bus_mst_rx (.clk_i(s_clk));
+
+   logic reg_rx_error;
+
+   typedef reg_test::reg_driver #(
+     .AW(RegBusAW),
+     .DW(RegBusDW),
+     .TT(2ns)
+   ) reg_bus_master_t;
+
    
    // ---------------------------- DUT -----------------------------
    // TX ETH_RGMII
@@ -86,7 +111,9 @@ module eth_tb;
       .eth_txd         ( eth_txd           ),
       
       .eth_rst_n       ( eth_tx_rst_n      ),
-      .phy_tx_clk_i    ( s_clk_125MHz_0    ) //0
+      .phy_tx_clk_i    ( s_clk_125MHz_0    ), //0
+
+      .regbus_slave(reg_bus_mst_tx)
       );
 
    // RX ETH_RGMII
@@ -115,7 +142,9 @@ module eth_tb;
       .eth_txd         ( eth_rxd           ),
       
       .eth_rst_n       ( eth_rx_rst_n      ),
-      .phy_tx_clk_i    ( s_clk_125MHz_0    ) //0
+      .phy_tx_clk_i    ( s_clk_125MHz_0    ), //0
+
+      .regbus_slave(reg_bus_mst_rx)
       );
 
    // high level functions for axi operations
@@ -127,14 +156,14 @@ module eth_tb;
    // initialization data array (data to be sent by TX)
    logic [DW-1:0] data_array [7:0];
    initial begin
-      data_array[0] = 64'h1032207098001032; //1 --> 230100890702 2301, mac dest + inizio di mac source
-      data_array[1] = 64'h3210E20020709800; //2 --> 00890702 002E 0123, fine mac source + length + payload
-      data_array[2] = 64'h1716151413121110; // payload
-      data_array[3] = 64'h2726252423222120;
-      data_array[4] = 64'h3736353433323130;
-      data_array[5] = 64'h4746454443424140;
-      data_array[6] = 64'h5756555453525150;
-      data_array[7] = 64'h6766656463626160;
+      data_array[0] = 64'h1032207098001032; //1 --> 230100890702 (Multicast Address) 2301, mac dest + begi of src mac address
+      data_array[1] = 64'h3210E20020709800; //2 --> 00890702 002E 0123, end of soource mac address + length/Ethertype(002E=IEEE802.3) + payload (2 byte)
+      data_array[2] = 64'h1716151413121110; //3 --> payload 8 byte
+      data_array[3] = 64'h2726252423222120; //4 --> payload 8 byte
+      data_array[4] = 64'h3736353433323130; //5 --> payload 8 byte
+      data_array[5] = 64'h4746454443424140; //6 --> payload 8 byte
+      data_array[6] = 64'h5756555453525150; //7 --> payload 8 byte
+      data_array[7] = 64'h6766656463626160; //8 --> payload 8 byte
    end
 
    // initialization read addresses
@@ -209,9 +238,10 @@ module eth_tb;
 
 
    // ------------------------ BEGINNING OF SIMULATION ------------------------
+   reg_bus_master_t reg_master_tx = new(reg_bus_mst_tx);
+   reg_bus_master_t reg_master_rx = new(reg_bus_mst_rx);
    
    initial begin
-
       // General reset
       #tCK;
       s_rst_n <= 0;
@@ -219,15 +249,19 @@ module eth_tb;
       s_rst_n <= 1;
       #tCK;
 
-      // Reset axi master
+      // Reset axi master and reg master
       fix.reset_master(axi_master_tx_drv);
+      reg_master_tx.reset_master();
+      reg_master_rx.reset_master();
       repeat(5) @(posedge s_clk);
 
       #3000ns;
       
       
-      // Packet length
-      fix.write_axi(axi_master_tx_drv,'h00000810,'h00000040, 'h0f);
+      // Configure ethernet module
+      reg_master_tx.send_write(4'h0, 32'h00890702, 4'b1111, reg_tx_error); //lower 32bits of MAC address
+      @(posedge s_clk);
+      reg_master_tx.send_write(4'h4, 32'h00000040, 4'b1111, reg_tx_error); //upper 16bits of MAC address + other configuration set to false/0
       repeat(5) @(posedge s_clk);
       
       // TX BUFFER FILLING ----------------------------------------------
@@ -237,17 +271,8 @@ module eth_tb;
       end
       repeat(10) @(posedge s_clk);
       
-      // TRANSMISSION OF PACKET ----------------------------------------- 
-      // 1 --> mac_address[31:0]
-      fix.write_axi(axi_master_tx_drv,'h00000800,'h00890702, 'h0f);
-      @(posedge s_clk);
-      
-      // 2 --> {irq_en,promiscuous,spare,loopback,cooked,mac_address[47:32]}
-      fix.write_axi(axi_master_tx_drv,'h00000808,'h00002301, 'h0f);
-      @(posedge s_clk);
-
-      // 3 --> Rx frame check sequence register(read) and last register(write)
-      fix.write_axi(axi_master_tx_drv,'h00000828,'h00000008, 'h0f);
+      // START TRANSMISSION OF PACKET ----------------------------------------- 
+      reg_master_tx.send_write(4'h8, 32'b0000_0000_0010_0000_0101_0000_0100_0000, 4'b1111, reg_tx_error); // set lastbuf, tx_enable_dly and tx_packet_length
       @(posedge s_clk);
      
    end
