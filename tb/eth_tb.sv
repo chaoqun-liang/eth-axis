@@ -61,7 +61,7 @@ module eth_tb;
    axi_drv_t axi_master_tx_drv =  new(axi_master_tx_dv);
    axi_drv_t axi_master_rx_drv =  new(axi_master_rx_dv);
 
-   //------------------------ REG BUS (Configuration) -------------------------- 
+   //----------------- (configuration) REG Drivers ---------------------
 
    REG_BUS #(
      .DATA_WIDTH(RegBusDW),
@@ -80,9 +80,11 @@ module eth_tb;
    typedef reg_test::reg_driver #(
      .AW(RegBusAW),
      .DW(RegBusDW),
-     .TT(2ns)
+     .TT(tCK)
    ) reg_bus_master_t;
 
+   reg_bus_master_t reg_master_tx = new(reg_bus_mst_tx);
+   reg_bus_master_t reg_master_rx = new(reg_bus_mst_rx);
    
    // ---------------------------- DUT -----------------------------
    // TX ETH_RGMII
@@ -238,9 +240,6 @@ module eth_tb;
 
 
    // ------------------------ BEGINNING OF SIMULATION ------------------------
-   reg_bus_master_t reg_master_tx = new(reg_bus_mst_tx);
-   reg_bus_master_t reg_master_rx = new(reg_bus_mst_rx);
-   
    initial begin
       // General reset
       #tCK;
