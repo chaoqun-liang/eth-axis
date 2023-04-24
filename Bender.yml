@@ -10,10 +10,11 @@ package:
 
 dependencies:
   axi_mem_if : { git: git@github.com:pulp-platform/axi_mem_if.git, version: 0.2.1 }
-  axi : { git: "git@github.com:pulp-platform/axi.git", version: 0.36.0 }
+  axi : { git: "git@github.com:pulp-platform/axi.git", version: 0.38.0 }
   common_verification : { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
   register_interface : { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.8 }
   common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
+  axi_stream: { git: "git@github.com:pulp-platform/axi_stream.git", rev: "488a49ad9859349cb7ae6d7960668c7e454fa79d" }
 
 export_include_dirs:
   - include
@@ -25,17 +26,12 @@ sources:
   # Level 0
   - rtl/eth_framing_reg/eth_framing_reg_pkg.sv
   - rtl/eth_framing_reg/eth_framing_reg_top.sv
-  - rtl/asym_ram_sdp_read_wider.v
   - rtl/axis_async_fifo.sv
   - rtl/axis_gmii_rx.sv
   - rtl/axis_gmii_tx.sv
-  - rtl/mem_wrap_tx.sv
-  - rtl/dualmem_widen8.sv
-  - rtl/dualmem_widen.sv
   - rtl/eth_mac_1g_rgmii_fifo.sv
   - rtl/eth_mac_1g_rgmii.sv
   - rtl/eth_mac_1g.sv
-  - rtl/eth_rgmii.sv
   - rtl/framing_top.sv
   - rtl/iddr.sv
   - rtl/oddr.sv
@@ -45,7 +41,3 @@ sources:
   - rtl/rgmii_soc.sv
   - rtl/ssio_ddr_in.sv
   - tb/eth_tb.sv
-  - tb/fixture_eth.sv
-  - rtl/IN22FDX_R2PV_WFVG_W00512B032M04C128.v
-  - rtl/simple_dual_two_clocks.v
-  - rtl/mem_wrap_rx.sv

@@ -131,7 +131,11 @@ end
 reg [2:0] rx_prescale;
 
 always @(posedge rx_clk) begin
-    rx_prescale <= rx_prescale + 3'd1;
+    if (gtx_rst) begin
+        rx_prescale <= 'd0;
+    end else begin
+        rx_prescale <= rx_prescale + 3'd1;
+    end
 end
 
 reg rx_prescale_sync_1;

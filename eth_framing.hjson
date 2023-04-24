@@ -19,7 +19,7 @@
           ]
         },
         { name: "CONFIG1",
-          desc: "Configures the: upper 2 bytes of the devices MAC address, cooked flag, loopback flag, promiscuous flag, interupt request enable flag",
+          desc: "Configures the: upper 2 bytes of the devices MAC address, promiscuous flag, MDIO interface",
           swaccess: "rw",
           hwaccess: "hro",
           fields: [
@@ -27,52 +27,37 @@
                 desc: "Upper 16 bit of the devices MAC address"
                 resval: "8961"
               },
-              { bits: "16", name: "cooked",
-                desc: "cooked flag"
-              },
-              { bits: "17", name: "loopback",
-                desc: "loopback flag"
-              },
-              { bits: "21:18", name: "spare",
-                desc: "reserved for later use"
-              },
-              { bits: "22", name: "promiscuous",
+              { bits: "16", name: "promiscuous",
                 desc: "promiscuous flag"
               },
-              { bits: "23", name: "irq_en",
-                desc: "interupt request enable flag"
+              { bits: "17", name: "phy_mdclk",
+                desc: "MDIO clock"
+              },
+              { bits: "18", name: "phy_mdio_o",
+                desc: "MDIO output"
+              },
+              { bits: "19", name: "phy_mdio_oe",
+                desc: "MDIO output enable"
               }
           ]
         },
         { name: "CONFIG2",
-          desc: "Configures the: length of the packet to be sent, tx_enable flag, MDIO interface, last and first RX buffer byte location",
-          swaccess: "rw",
-          hwaccess: "hro",
+          desc: "The FCS TX status",
+          swaccess: "ro",
+          hwaccess: "hwo",
           fields: [
-              { bits: "10:0", name: "tx_packet_length",
-                desc: "length of the packet to be sent"
-              },
-              { bits: "14:11", name: "tx_enable_dly",
-                desc: "Enables the TX process"
-                hwaccess: "hrw"
-              },
-              { bits: "15", name: "phy_mdclk",
-                desc: "MDIO clock"
-                hwaccess: "hrw"
-              },
-              { bits: "16", name: "phy_mdio_o",
-                desc: "MDIO output"
-                hwaccess: "hrw"
-              },
-              { bits: "17", name: "phy_mdio_oe",
-                desc: "MDIO output enable"
-                hwaccess: "hrw"
-              },
-              { bits: "21:18", name: "lastbuf",
-                desc: "Pointer to last RX byte location in buffer"
-              },
-              { bits: "25:22", name: "firstbuf",
-                desc: "Pointer to first RX byte location in buffer"
+              { bits: "31:0", name: "tx_fcs_reg",
+                desc: "FCS TX status"
+              }
+          ]
+        },
+        { name: "CONFIG3",
+          desc: "The FCS RX status",
+          swaccess: "ro",
+          hwaccess: "hwo",
+          fields: [
+              { bits: "31:0", name: "rx_fcs_reg",
+                desc: "FCS RX status"
               }
           ]
         }

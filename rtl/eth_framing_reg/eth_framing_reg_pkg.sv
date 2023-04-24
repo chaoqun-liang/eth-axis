@@ -23,93 +23,60 @@ package eth_framing_reg_pkg;
     } upper_mac_address;
     struct packed {
       logic        q;
-    } cooked;
-    struct packed {
-      logic        q;
-    } loopback;
-    struct packed {
-      logic [3:0]  q;
-    } spare;
-    struct packed {
-      logic        q;
     } promiscuous;
     struct packed {
       logic        q;
-    } irq_en;
+    } phy_mdclk;
+    struct packed {
+      logic        q;
+    } phy_mdio_o;
+    struct packed {
+      logic        q;
+    } phy_mdio_oe;
   } eth_framing_reg2hw_config1_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [10:0] q;
-    } tx_packet_length;
-    struct packed {
-      logic [3:0]  q;
-    } tx_enable_dly;
-    struct packed {
-      logic        q;
-    } phy_mdclk;
-    struct packed {
-      logic        q;
-    } phy_mdio_o;
-    struct packed {
-      logic        q;
-    } phy_mdio_oe;
-    struct packed {
-      logic [3:0]  q;
-    } lastbuf;
-    struct packed {
-      logic [3:0]  q;
-    } firstbuf;
-  } eth_framing_reg2hw_config2_reg_t;
+    logic [31:0] d;
+    logic        de;
+  } eth_framing_hw2reg_config2_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } tx_enable_dly;
-    struct packed {
-      logic        d;
-      logic        de;
-    } phy_mdclk;
-    struct packed {
-      logic        d;
-      logic        de;
-    } phy_mdio_o;
-    struct packed {
-      logic        d;
-      logic        de;
-    } phy_mdio_oe;
-  } eth_framing_hw2reg_config2_reg_t;
+    logic [31:0] d;
+    logic        de;
+  } eth_framing_hw2reg_config3_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    eth_framing_reg2hw_config0_reg_t config0; // [81:50]
-    eth_framing_reg2hw_config1_reg_t config1; // [49:26]
-    eth_framing_reg2hw_config2_reg_t config2; // [25:0]
+    eth_framing_reg2hw_config0_reg_t config0; // [51:20]
+    eth_framing_reg2hw_config1_reg_t config1; // [19:0]
   } eth_framing_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    eth_framing_hw2reg_config2_reg_t config2; // [10:0]
+    eth_framing_hw2reg_config2_reg_t config2; // [65:33]
+    eth_framing_hw2reg_config3_reg_t config3; // [32:0]
   } eth_framing_hw2reg_t;
 
   // Register offsets
   parameter logic [BlockAw-1:0] ETH_FRAMING_CONFIG0_OFFSET = 4'h 0;
   parameter logic [BlockAw-1:0] ETH_FRAMING_CONFIG1_OFFSET = 4'h 4;
   parameter logic [BlockAw-1:0] ETH_FRAMING_CONFIG2_OFFSET = 4'h 8;
+  parameter logic [BlockAw-1:0] ETH_FRAMING_CONFIG3_OFFSET = 4'h c;
 
   // Register index
   typedef enum int {
     ETH_FRAMING_CONFIG0,
     ETH_FRAMING_CONFIG1,
-    ETH_FRAMING_CONFIG2
+    ETH_FRAMING_CONFIG2,
+    ETH_FRAMING_CONFIG3
   } eth_framing_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ETH_FRAMING_PERMIT [3] = '{
+  parameter logic [3:0] ETH_FRAMING_PERMIT [4] = '{
     4'b 1111, // index[0] ETH_FRAMING_CONFIG0
     4'b 0111, // index[1] ETH_FRAMING_CONFIG1
-    4'b 1111  // index[2] ETH_FRAMING_CONFIG2
+    4'b 1111, // index[2] ETH_FRAMING_CONFIG2
+    4'b 1111  // index[3] ETH_FRAMING_CONFIG3
   };
 
 endpackage

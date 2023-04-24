@@ -74,42 +74,20 @@ module eth_framing_reg_top #(
   logic [15:0] config1_upper_mac_address_qs;
   logic [15:0] config1_upper_mac_address_wd;
   logic config1_upper_mac_address_we;
-  logic config1_cooked_qs;
-  logic config1_cooked_wd;
-  logic config1_cooked_we;
-  logic config1_loopback_qs;
-  logic config1_loopback_wd;
-  logic config1_loopback_we;
-  logic [3:0] config1_spare_qs;
-  logic [3:0] config1_spare_wd;
-  logic config1_spare_we;
   logic config1_promiscuous_qs;
   logic config1_promiscuous_wd;
   logic config1_promiscuous_we;
-  logic config1_irq_en_qs;
-  logic config1_irq_en_wd;
-  logic config1_irq_en_we;
-  logic [10:0] config2_tx_packet_length_qs;
-  logic [10:0] config2_tx_packet_length_wd;
-  logic config2_tx_packet_length_we;
-  logic [3:0] config2_tx_enable_dly_qs;
-  logic [3:0] config2_tx_enable_dly_wd;
-  logic config2_tx_enable_dly_we;
-  logic config2_phy_mdclk_qs;
-  logic config2_phy_mdclk_wd;
-  logic config2_phy_mdclk_we;
-  logic config2_phy_mdio_o_qs;
-  logic config2_phy_mdio_o_wd;
-  logic config2_phy_mdio_o_we;
-  logic config2_phy_mdio_oe_qs;
-  logic config2_phy_mdio_oe_wd;
-  logic config2_phy_mdio_oe_we;
-  logic [3:0] config2_lastbuf_qs;
-  logic [3:0] config2_lastbuf_wd;
-  logic config2_lastbuf_we;
-  logic [3:0] config2_firstbuf_qs;
-  logic [3:0] config2_firstbuf_wd;
-  logic config2_firstbuf_we;
+  logic config1_phy_mdclk_qs;
+  logic config1_phy_mdclk_wd;
+  logic config1_phy_mdclk_we;
+  logic config1_phy_mdio_o_qs;
+  logic config1_phy_mdio_o_wd;
+  logic config1_phy_mdio_o_we;
+  logic config1_phy_mdio_oe_qs;
+  logic config1_phy_mdio_oe_wd;
+  logic config1_phy_mdio_oe_we;
+  logic [31:0] config2_qs;
+  logic [31:0] config3_qs;
 
   // Register instances
   // R[config0]: V(False)
@@ -167,85 +145,7 @@ module eth_framing_reg_top #(
   );
 
 
-  //   F[cooked]: 16:16
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_config1_cooked (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config1_cooked_we),
-    .wd     (config1_cooked_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config1.cooked.q ),
-
-    // to register interface (read)
-    .qs     (config1_cooked_qs)
-  );
-
-
-  //   F[loopback]: 17:17
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_config1_loopback (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config1_loopback_we),
-    .wd     (config1_loopback_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config1.loopback.q ),
-
-    // to register interface (read)
-    .qs     (config1_loopback_qs)
-  );
-
-
-  //   F[spare]: 21:18
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_config1_spare (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config1_spare_we),
-    .wd     (config1_spare_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config1.spare.q ),
-
-    // to register interface (read)
-    .qs     (config1_spare_qs)
-  );
-
-
-  //   F[promiscuous]: 22:22
+  //   F[promiscuous]: 16:16
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -271,18 +171,18 @@ module eth_framing_reg_top #(
   );
 
 
-  //   F[irq_en]: 23:23
+  //   F[phy_mdclk]: 17:17
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_config1_irq_en (
+  ) u_config1_phy_mdclk (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (config1_irq_en_we),
-    .wd     (config1_irq_en_wd),
+    .we     (config1_phy_mdclk_we),
+    .wd     (config1_phy_mdclk_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -290,205 +190,126 @@ module eth_framing_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.config1.irq_en.q ),
+    .q      (reg2hw.config1.phy_mdclk.q ),
 
     // to register interface (read)
-    .qs     (config1_irq_en_qs)
+    .qs     (config1_phy_mdclk_qs)
+  );
+
+
+  //   F[phy_mdio_o]: 18:18
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_config1_phy_mdio_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (config1_phy_mdio_o_we),
+    .wd     (config1_phy_mdio_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.config1.phy_mdio_o.q ),
+
+    // to register interface (read)
+    .qs     (config1_phy_mdio_o_qs)
+  );
+
+
+  //   F[phy_mdio_oe]: 19:19
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_config1_phy_mdio_oe (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (config1_phy_mdio_oe_we),
+    .wd     (config1_phy_mdio_oe_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.config1.phy_mdio_oe.q ),
+
+    // to register interface (read)
+    .qs     (config1_phy_mdio_oe_qs)
   );
 
 
   // R[config2]: V(False)
 
-  //   F[tx_packet_length]: 10:0
   prim_subreg #(
-    .DW      (11),
-    .SWACCESS("RW"),
-    .RESVAL  (11'h0)
-  ) u_config2_tx_packet_length (
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_config2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (config2_tx_packet_length_we),
-    .wd     (config2_tx_packet_length_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.config2.de),
+    .d      (hw2reg.config2.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.config2.tx_packet_length.q ),
+    .q      (),
 
     // to register interface (read)
-    .qs     (config2_tx_packet_length_qs)
+    .qs     (config2_qs)
   );
 
 
-  //   F[tx_enable_dly]: 14:11
+  // R[config3]: V(False)
+
   prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_config2_tx_enable_dly (
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_config3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (config2_tx_enable_dly_we),
-    .wd     (config2_tx_enable_dly_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.config2.tx_enable_dly.de),
-    .d      (hw2reg.config2.tx_enable_dly.d ),
+    .de     (hw2reg.config3.de),
+    .d      (hw2reg.config3.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.config2.tx_enable_dly.q ),
+    .q      (),
 
     // to register interface (read)
-    .qs     (config2_tx_enable_dly_qs)
-  );
-
-
-  //   F[phy_mdclk]: 15:15
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_config2_phy_mdclk (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config2_phy_mdclk_we),
-    .wd     (config2_phy_mdclk_wd),
-
-    // from internal hardware
-    .de     (hw2reg.config2.phy_mdclk.de),
-    .d      (hw2reg.config2.phy_mdclk.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config2.phy_mdclk.q ),
-
-    // to register interface (read)
-    .qs     (config2_phy_mdclk_qs)
-  );
-
-
-  //   F[phy_mdio_o]: 16:16
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_config2_phy_mdio_o (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config2_phy_mdio_o_we),
-    .wd     (config2_phy_mdio_o_wd),
-
-    // from internal hardware
-    .de     (hw2reg.config2.phy_mdio_o.de),
-    .d      (hw2reg.config2.phy_mdio_o.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config2.phy_mdio_o.q ),
-
-    // to register interface (read)
-    .qs     (config2_phy_mdio_o_qs)
-  );
-
-
-  //   F[phy_mdio_oe]: 17:17
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_config2_phy_mdio_oe (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config2_phy_mdio_oe_we),
-    .wd     (config2_phy_mdio_oe_wd),
-
-    // from internal hardware
-    .de     (hw2reg.config2.phy_mdio_oe.de),
-    .d      (hw2reg.config2.phy_mdio_oe.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config2.phy_mdio_oe.q ),
-
-    // to register interface (read)
-    .qs     (config2_phy_mdio_oe_qs)
-  );
-
-
-  //   F[lastbuf]: 21:18
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_config2_lastbuf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config2_lastbuf_we),
-    .wd     (config2_lastbuf_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config2.lastbuf.q ),
-
-    // to register interface (read)
-    .qs     (config2_lastbuf_qs)
-  );
-
-
-  //   F[firstbuf]: 25:22
-  prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'h0)
-  ) u_config2_firstbuf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (config2_firstbuf_we),
-    .wd     (config2_firstbuf_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.config2.firstbuf.q ),
-
-    // to register interface (read)
-    .qs     (config2_firstbuf_qs)
+    .qs     (config3_qs)
   );
 
 
 
 
-  logic [2:0] addr_hit;
+  logic [3:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == ETH_FRAMING_CONFIG0_OFFSET);
     addr_hit[1] = (reg_addr == ETH_FRAMING_CONFIG1_OFFSET);
     addr_hit[2] = (reg_addr == ETH_FRAMING_CONFIG2_OFFSET);
+    addr_hit[3] = (reg_addr == ETH_FRAMING_CONFIG3_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -498,7 +319,8 @@ module eth_framing_reg_top #(
     wr_err = (reg_we &
               ((addr_hit[0] & (|(ETH_FRAMING_PERMIT[0] & ~reg_be))) |
                (addr_hit[1] & (|(ETH_FRAMING_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(ETH_FRAMING_PERMIT[2] & ~reg_be)))));
+               (addr_hit[2] & (|(ETH_FRAMING_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(ETH_FRAMING_PERMIT[3] & ~reg_be)))));
   end
 
   assign config0_we = addr_hit[0] & reg_we & !reg_error;
@@ -507,41 +329,17 @@ module eth_framing_reg_top #(
   assign config1_upper_mac_address_we = addr_hit[1] & reg_we & !reg_error;
   assign config1_upper_mac_address_wd = reg_wdata[15:0];
 
-  assign config1_cooked_we = addr_hit[1] & reg_we & !reg_error;
-  assign config1_cooked_wd = reg_wdata[16];
-
-  assign config1_loopback_we = addr_hit[1] & reg_we & !reg_error;
-  assign config1_loopback_wd = reg_wdata[17];
-
-  assign config1_spare_we = addr_hit[1] & reg_we & !reg_error;
-  assign config1_spare_wd = reg_wdata[21:18];
-
   assign config1_promiscuous_we = addr_hit[1] & reg_we & !reg_error;
-  assign config1_promiscuous_wd = reg_wdata[22];
+  assign config1_promiscuous_wd = reg_wdata[16];
 
-  assign config1_irq_en_we = addr_hit[1] & reg_we & !reg_error;
-  assign config1_irq_en_wd = reg_wdata[23];
+  assign config1_phy_mdclk_we = addr_hit[1] & reg_we & !reg_error;
+  assign config1_phy_mdclk_wd = reg_wdata[17];
 
-  assign config2_tx_packet_length_we = addr_hit[2] & reg_we & !reg_error;
-  assign config2_tx_packet_length_wd = reg_wdata[10:0];
+  assign config1_phy_mdio_o_we = addr_hit[1] & reg_we & !reg_error;
+  assign config1_phy_mdio_o_wd = reg_wdata[18];
 
-  assign config2_tx_enable_dly_we = addr_hit[2] & reg_we & !reg_error;
-  assign config2_tx_enable_dly_wd = reg_wdata[14:11];
-
-  assign config2_phy_mdclk_we = addr_hit[2] & reg_we & !reg_error;
-  assign config2_phy_mdclk_wd = reg_wdata[15];
-
-  assign config2_phy_mdio_o_we = addr_hit[2] & reg_we & !reg_error;
-  assign config2_phy_mdio_o_wd = reg_wdata[16];
-
-  assign config2_phy_mdio_oe_we = addr_hit[2] & reg_we & !reg_error;
-  assign config2_phy_mdio_oe_wd = reg_wdata[17];
-
-  assign config2_lastbuf_we = addr_hit[2] & reg_we & !reg_error;
-  assign config2_lastbuf_wd = reg_wdata[21:18];
-
-  assign config2_firstbuf_we = addr_hit[2] & reg_we & !reg_error;
-  assign config2_firstbuf_wd = reg_wdata[25:22];
+  assign config1_phy_mdio_oe_we = addr_hit[1] & reg_we & !reg_error;
+  assign config1_phy_mdio_oe_wd = reg_wdata[19];
 
   // Read data return
   always_comb begin
@@ -553,21 +351,18 @@ module eth_framing_reg_top #(
 
       addr_hit[1]: begin
         reg_rdata_next[15:0] = config1_upper_mac_address_qs;
-        reg_rdata_next[16] = config1_cooked_qs;
-        reg_rdata_next[17] = config1_loopback_qs;
-        reg_rdata_next[21:18] = config1_spare_qs;
-        reg_rdata_next[22] = config1_promiscuous_qs;
-        reg_rdata_next[23] = config1_irq_en_qs;
+        reg_rdata_next[16] = config1_promiscuous_qs;
+        reg_rdata_next[17] = config1_phy_mdclk_qs;
+        reg_rdata_next[18] = config1_phy_mdio_o_qs;
+        reg_rdata_next[19] = config1_phy_mdio_oe_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[10:0] = config2_tx_packet_length_qs;
-        reg_rdata_next[14:11] = config2_tx_enable_dly_qs;
-        reg_rdata_next[15] = config2_phy_mdclk_qs;
-        reg_rdata_next[16] = config2_phy_mdio_o_qs;
-        reg_rdata_next[17] = config2_phy_mdio_oe_qs;
-        reg_rdata_next[21:18] = config2_lastbuf_qs;
-        reg_rdata_next[25:22] = config2_firstbuf_qs;
+        reg_rdata_next[31:0] = config2_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = config3_qs;
       end
 
       default: begin
