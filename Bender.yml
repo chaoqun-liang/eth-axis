@@ -26,7 +26,6 @@ sources:
   # Level 0
   - rtl/eth_framing_reg/eth_framing_reg_pkg.sv
   - rtl/eth_framing_reg/eth_framing_reg_top.sv
-  - rtl/axis_async_fifo.sv
   - rtl/axis_gmii_rx.sv
   - rtl/axis_gmii_tx.sv
   - rtl/eth_mac_1g_rgmii_fifo.sv
