@@ -292,8 +292,8 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_SIMULATION \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
     "+incdir+$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
     "$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/src/apb_pkg.sv" \
     "$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/src/apb_intf.sv" \
     "$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/src/apb_err_slv.sv" \
@@ -336,8 +336,8 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_SIMULATION \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
     "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/src/axi_pkg.sv" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/src/axi_intf.sv" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/src/axi_atop_filter.sv" \
@@ -390,8 +390,8 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_SIMULATION \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
     "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/src/axi_dumper.sv" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/src/axi_sim_mem.sv" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/src/axi_test.sv"
@@ -404,8 +404,8 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_SIMULATION \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/test/tb_axi_dw_pkg.sv" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/test/tb_axi_xbar_pkg.sv" \
     "$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/test/tb_axi_addr_test.sv" \
@@ -467,8 +467,8 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_SIMULATION \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi_stream-c93293e8e7a7f6d7/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
     "$ROOT/.bender/git/checkouts/axi_stream-c93293e8e7a7f6d7/test/axi_stream_test.sv" \
     "$ROOT/.bender/git/checkouts/axi_stream-c93293e8e7a7f6d7/test/tb_axi_stream_dw_downsizer.sv" \
     "$ROOT/.bender/git/checkouts/axi_stream-c93293e8e7a7f6d7/test/tb_axi_stream_dw_upsizer.sv"
@@ -481,10 +481,10 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_SIMULATION \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
+    "+incdir+$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
     "+incdir+$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/include" \
     "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
-    "+incdir+$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/include" \
     "$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/src/reg_intf.sv" \
     "$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/vendor/lowrisc_opentitan/src/prim_subreg_arb.sv" \
     "$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/vendor/lowrisc_opentitan/src/prim_subreg_ext.sv" \
@@ -511,10 +511,10 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_SIMULATION \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
-    "+incdir+$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
     "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
     "+incdir+$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/apb-35c2e79deae2aa36/include" \
     "$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/src/reg_test.sv"
 }]} {return 1}
 
@@ -526,13 +526,12 @@ if {[catch {vlog -incr -sv \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/.bender/git/checkouts/axi-4896f1a06c022fee/include" \
-    "+incdir+$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/include" \
-    "+incdir+$ROOT/include" \
     "+incdir+$ROOT/.bender/git/checkouts/common_cells-16a65734bb06714f/include" \
+    "+incdir+$ROOT/include" \
+    "+incdir+$ROOT/.bender/git/checkouts/register_interface-55d4a861c0a3a573/include" \
     "+incdir+$ROOT/.bender/git/checkouts/axi_stream-c93293e8e7a7f6d7/include" \
     "$ROOT/rtl/eth_framing_reg/eth_framing_reg_pkg.sv" \
     "$ROOT/rtl/eth_framing_reg/eth_framing_reg_top.sv" \
-    "$ROOT/rtl/axis_async_fifo.sv" \
     "$ROOT/rtl/axis_gmii_rx.sv" \
     "$ROOT/rtl/axis_gmii_tx.sv" \
     "$ROOT/rtl/eth_mac_1g_rgmii_fifo.sv" \

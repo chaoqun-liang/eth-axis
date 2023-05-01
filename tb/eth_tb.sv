@@ -332,7 +332,7 @@ module eth_tb ();
      data_array[7] = 64'h6766656463626160; //8 --> payload 8 byte
   end
 
-  logic [DW-1:0] data_recv_array[7:0];
+  logic [DW-1:0] data_recv_array[8:0];
   logic last_recv;
 
 
@@ -382,12 +382,67 @@ module eth_tb ();
     // Slave drivers RX-paths
     tx_framing_slave_drv.reset();
     rx_framing_slave_drv.reset();
+    // set receive array to 0;
+    reset_recv_array();
     repeat(5) @(posedge clk_i);
 
+    //set framing rx mac address to 48'h207098001032
     reg_master_rx.send_write(4'h0, 32'h98001032, 4'b1111, reg_tx_error); //lower 32bits of MAC address
     @(posedge clk_i);
     reg_master_rx.send_write(4'h4, 32'h00002070, 4'b1111, reg_tx_error); //upper 16bits of MAC address + other configuration set to false/0
 
+    // TEST 1: Send Frame with the destination_MAC = RX_module_MAC
+    $display("Test 1");
+    data_array[0] = 64'h1032_207098001032;
+    send_and_receive();
+    check_data_received();
+    @(posedge clk_i);
+
+    // TEST 2: Send Broadcast Frame
+    $display("Test 2");
+    reset_recv_array();
+    data_array[0] = 64'h1032_FFFFFFFFFFFF;
+    send_and_receive();
+    check_data_received();
+    @(posedge clk_i);
+
+    // TEST 3: Send Multicast Frame
+    $display("Test 3");
+    reset_recv_array();
+    data_array[0] = 64'h1032_01005EFFFFFF;
+    send_and_receive();
+    check_data_received();
+    @(posedge clk_i);
+
+    // TEST 4: Send Frame not addressed to RX_module without promiscuous flag
+    $display("Test 4");
+    reset_recv_array();
+    data_array[0] = 64'h1032_00015EFF3FFF;
+    send_and_receive();
+    check_no_data_received();
+    @(posedge clk_i);
+
+    // TEST 5: Send Frame not addressed to RX_module with promiscuous flag
+    $display("Test 5");
+    reset_recv_array();
+    data_array[0] = 64'h1032_00015EFF3FFF;
+    reg_master_rx.send_write(4'h4, 32'h00012070, 4'b1111, reg_tx_error); // set promiscuous flag
+    @(posedge clk_i);
+    send_and_receive();
+    check_data_received();
+    @(posedge clk_i);
+
+
+    $stop();
+  end
+
+  task reset_recv_array();
+    for (int i = 0; i < 8; i++) begin
+      data_recv_array[i] = 'd0;
+    end
+  endtask : reset_recv_array
+
+  task send_and_receive();
     fork
       begin // send
         tx_framing_master_drv.send(data_array[0], 1'b0);
@@ -398,6 +453,7 @@ module eth_tb ();
         tx_framing_master_drv.send(data_array[5], 1'b0);
         tx_framing_master_drv.send(data_array[6], 1'b0);
         tx_framing_master_drv.send(data_array[7], 1'b1);
+        repeat(34) @(posedge clk_i);
       end
       begin // receive
         rx_framing_slave_drv.recv(data_recv_array[0], last_recv);
@@ -408,9 +464,12 @@ module eth_tb ();
         rx_framing_slave_drv.recv(data_recv_array[5], last_recv);
         rx_framing_slave_drv.recv(data_recv_array[6], last_recv);
         rx_framing_slave_drv.recv(data_recv_array[7], last_recv);
+        rx_framing_slave_drv.recv(data_recv_array[8], last_recv); // SFD
       end
-    join
+    join_any
+  endtask : send_and_receive
 
+  task check_data_received();
     for(int j=0; j<8; j++) begin
       if (data_array[j] != data_recv_array[j]) begin
         $display("Data at j= %d was recived %h but was sent as %h", j, data_recv_array[j], data_array[j]);
@@ -418,7 +477,14 @@ module eth_tb ();
         $display("Data at j= %d was correctly recived: %h", j, data_recv_array[j]);
       end
     end
-    $stop();
-  end
+  endtask : check_data_received
+
+  task check_no_data_received();
+    for(int j=0; j<8; j++) begin
+      if (data_recv_array[j] != 'd0) begin
+        $display("Data at j= %d was recived %h but no data should have been received", j, data_recv_array[j]);
+      end
+    end
+  endtask : check_no_data_received
 
 endmodule
