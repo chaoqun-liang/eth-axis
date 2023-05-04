@@ -23,7 +23,7 @@ packages:
     dependencies:
     - axi
   axi_stream:
-    revision: 488a49ad9859349cb7ae6d7960668c7e454fa79d
+    revision: 34d6b8c57a112c1d88c2718af749f6d1505cb61d
     version: null
     source:
       Git: git@github.com:pulp-platform/axi_stream.git

@@ -14,7 +14,7 @@ dependencies:
   common_verification : { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
   register_interface : { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.8 }
   common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
-  axi_stream: { git: "git@github.com:pulp-platform/axi_stream.git", rev: "488a49ad9859349cb7ae6d7960668c7e454fa79d" }
+  axi_stream: { git: "git@github.com:pulp-platform/axi_stream.git", rev: "34d6b8c57a112c1d88c2718af749f6d1505cb61d" }
 
 export_include_dirs:
   - include
@@ -39,7 +39,12 @@ sources:
   - rtl/rgmii_phy_if.sv
   - rtl/rgmii_soc.sv
   - rtl/ssio_ddr_in.sv
+  - rtl/framing_synth_pkg.sv
   - rtl/framing_synth.sv
+
+  - target: synthesis
+    files:
+      - ../../macro_wrap/tc_clk_gf22.sv
 
   - target: test
     files:

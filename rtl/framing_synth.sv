@@ -10,9 +10,17 @@
 
 module framing_synth #(
   /// AXI Stream in request struct
-  parameter type axi_stream_req_t = logic,
+  parameter type axi_stream_req_t = framing_synth_pkg::s_req_t,
   /// AXI Stream in response struct
-  parameter type axi_stream_rsp_t = logic
+  parameter type axi_stream_rsp_t = framing_synth_pkg::s_rsp_t,
+  /// AXI Stream Data Width
+  parameter int unsigned DataWidth = 64,
+  /// AXI Stream Id Width
+  parameter int unsigned IdWidth = 0,
+  /// AXI Stream Dest Width = 0
+  parameter int unsigned DestWidth = 0,
+  /// AXI Stream User Width
+  parameter int unsigned UserWidth = 1
 ) (
   // Internal 125 MHz clock
   input  wire                                           clk_i        ,
@@ -44,30 +52,6 @@ module framing_synth #(
   output      eth_framing_reg_pkg::eth_framing_hw2reg_t hw2reg         // Write from HW
 );
 
-  localparam int unsigned DataWidth = 64;
-  localparam int unsigned IdWidth   = 0;
-  localparam int unsigned DestWidth = 0;
-  localparam int unsigned UserWidth = 1;
-
-  // AXI stream channels typedefs
-  typedef logic [DataWidth-1:0]   tdata_t;
-  typedef logic [DataWidth/8-1:0] tstrb_t;
-  typedef logic [DataWidth/8-1:0] tkeep_t;
-  typedef logic [IdWidth-1:0]     tid_t;
-  typedef logic [DestWidth-1:0]   tdest_t;
-  typedef logic [UserWidth-1:0]   tuser_t;
-
-  `AXI_STREAM_TYPEDEF_ALL(s, tdata_t, tstrb_t, tkeep_t, tid_t, tdest_t, tuser_t)
-
-  // AXI stream signals
-  s_req_t s_tx_req, s_rx_req;
-  s_rsp_t s_tx_rsp, s_rx_rsp;
-
-  assign s_tx_req = tx_axis_req_i;
-  assign tx_axis_rsp_o = s_tx_rsp;
-  assign rx_axis_req_i = s_rx_req;
-  assign rx_axis_rsp_o = s_rx_rsp;
-
 // ---------------- axis streams for the framing module ----------------------
   localparam int unsigned FramingDataWidth = 8;
   localparam int unsigned FramingIdWidth   = 0;
@@ -87,6 +71,7 @@ module framing_synth #(
   // AXI stream signals
   s_framing_req_t s_framing_tx_req, s_framing_rx_req;
   s_framing_rsp_t s_framing_tx_rsp, s_framing_rx_rsp;
+// ---------------- END: axis streams for the framing module ----------------------
 
   framing_top #(
     .axi_stream_req_t(s_framing_req_t),
@@ -131,15 +116,15 @@ module framing_synth #(
     .IdWidth             (IdWidth),
     .DestWidth           (DestWidth),
     .UserWidth           (UserWidth),
-    .axi_stream_in_req_t(s_req_t),
-    .axi_stream_in_rsp_t(s_rsp_t),
+    .axi_stream_in_req_t(axi_stream_req_t),
+    .axi_stream_in_rsp_t(axi_stream_rsp_t),
     .axi_stream_out_req_t(s_framing_req_t),
     .axi_stream_out_rsp_t(s_framing_rsp_t)
   ) i_axi_stream_dw_downsizer (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
-    .in_req_i (s_tx_req),
-    .in_rsp_o (s_tx_rsp),
+    .in_req_i (tx_axis_req_i),
+    .in_rsp_o (tx_axis_rsp_o),
     .out_req_o(s_framing_tx_req),
     .out_rsp_i(s_framing_tx_rsp)
   );
@@ -152,15 +137,15 @@ module framing_synth #(
     .UserWidth           (UserWidth),
     .axi_stream_in_req_t(s_framing_req_t),
     .axi_stream_in_rsp_t(s_framing_rsp_t),
-    .axi_stream_out_req_t(s_req_t),
-    .axi_stream_out_rsp_t(s_rsp_t)
+    .axi_stream_out_req_t(axi_stream_req_t),
+    .axi_stream_out_rsp_t(axi_stream_rsp_t)
   ) i_axi_stream_dw_upsizer (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .in_req_i (s_framing_rx_req),
     .in_rsp_o (s_framing_rx_rsp),
-    .out_req_o(s_rx_req),
-    .out_rsp_i(s_rx_rsp)
+    .out_req_o(rx_axis_req_o),
+    .out_rsp_i(rx_axis_rsp_i)
   );
 
 endmodule : framing_synth

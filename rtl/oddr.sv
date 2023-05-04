@@ -25,10 +25,9 @@ THE SOFTWARE.
 // Language: Verilog 2001
 
 /*
- * Generic ODDR module
+ * Generic ODDR module (ouput double data rate)
  */
-module oddr #
-(
+module oddr #(
     // target ("SIM", "GENERIC", "XILINX", "ALTERA")
     parameter TARGET = "GENERIC",
     // IODDR style ("IODDR", "IODDR2")
@@ -37,9 +36,9 @@ module oddr #
     parameter IODDR_STYLE = "IODDR2",
     // Width of register in bits
     parameter WIDTH = 1
-)
-(
-    input  wire             clk,
+) (
+    input  wire             clk_i,
+    input  wire             rst_ni,
 
     input  wire [WIDTH-1:0] d1,
     input  wire [WIDTH-1:0] d2,
@@ -74,7 +73,7 @@ if (TARGET == "XILINX") begin
             )
             oddr_inst (
                 .Q(q[n]),
-                .C(clk),
+                .C(clk_i),
                 .CE(1'b1),
                 .D1(d1[n]),
                 .D2(d2[n]),
@@ -88,8 +87,8 @@ if (TARGET == "XILINX") begin
             )
             oddr_inst (
                 .Q(q[n]),
-                .C0(clk),
-                .C1(~clk),
+                .C0(clk_i),
+                .C1(~clk_i),
                 .CE(1'b1),
                 .D0(d1[n]),
                 .D1(d2[n]),
@@ -109,30 +108,31 @@ end else if (TARGET == "ALTERA") begin
         .datain_h(d1),
         .datain_l(d2),
         .outclocken(1'b1),
-        .outclock(clk),
+        .outclock(clk_i),
         .aclr(1'b0),
         .dataout(q)
     );
 end else begin
-    reg [WIDTH-1:0] d_reg_1 = {WIDTH{1'b0}};
-    reg [WIDTH-1:0] d_reg_2 = {WIDTH{1'b0}};
+    for (n = 0; n < WIDTH; n = n + 1) begin : oddr
+        logic q1, q2;
 
-    reg [WIDTH-1:0] q_reg = {WIDTH{1'b0}};
+        tc_clk_mux2 i_ddrmux (
+            .clk_o     ( q[n] ),
+            .clk0_i    ( q1  ),
+            .clk1_i    ( q2  ),
+            .clk_sel_i ( clk_i )
+        );
 
-    always @(posedge clk) begin
-        d_reg_1 <= d1;
-        d_reg_2 <= d2;
-    end
-
-    always @(posedge clk) begin
-        q_reg <= d1;
-    end
-
-    always @(negedge clk) begin
-        q_reg <= d_reg_2;
-    end
-
-    assign q = q_reg;
+        always_ff @(posedge clk_i or negedge rst_ni) begin
+            if (~rst_ni) begin
+                q1 <= 1'b0;
+                q2 <= 1'b0;
+            end else begin
+                q1 <= d1[n];
+                q2 <= d2[n];
+            end
+        end
+    end  // oddr
 end
 
 endgenerate

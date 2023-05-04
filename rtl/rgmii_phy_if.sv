@@ -212,7 +212,8 @@ oddr #(
     .WIDTH(1)
 )
 clk_oddr_inst (
-    .clk(USE_CLK90 == "TRUE" ? clk90 : clk),
+    .clk_i(USE_CLK90 == "TRUE" ? clk90 : clk),
+    .rst_ni(~rst),
     .d1(rgmii_tx_clk_1),
     .d2(rgmii_tx_clk_2),
     .q(phy_rgmii_tx_clk)
@@ -224,7 +225,8 @@ oddr #(
     .WIDTH(5)
 )
 data_oddr_inst (
-    .clk(clk),
+    .clk_i(clk),
+    .rst_ni(~rst),
     .d1({rgmii_txd_1, rgmii_tx_ctl_1}),
     .d2({rgmii_txd_2, rgmii_tx_ctl_2}),
     .q({phy_rgmii_txd, phy_rgmii_tx_ctl})
