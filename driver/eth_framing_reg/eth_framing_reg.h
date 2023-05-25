@@ -24,10 +24,10 @@ extern "C" {
 #define ETH_FRAMING_CONFIG1_PHY_MDIO_O_BIT 18
 #define ETH_FRAMING_CONFIG1_PHY_MDIO_OE_BIT 19
 
-// Tha FCS TX status
+// The FCS TX status
 #define ETH_FRAMING_CONFIG2_REG_OFFSET 0x8
 
-// Tha FCS RX status
+// The FCS RX status
 #define ETH_FRAMING_CONFIG3_REG_OFFSET 0xc
 
 #ifdef __cplusplus

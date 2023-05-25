@@ -20,7 +20,11 @@ module framing_synth #(
   /// AXI Stream Dest Width = 0
   parameter int unsigned DestWidth = 0,
   /// AXI Stream User Width
-  parameter int unsigned UserWidth = 1
+  parameter int unsigned UserWidth = 1,
+  /// REGBUS
+  parameter type reg_req_t = framing_synth_pkg::reg_bus_req_t,
+  parameter type reg_rsp_t = framing_synth_pkg::reg_bus_rsp_t,
+  parameter int AW_REGBUS = 4
 ) (
   // Internal 125 MHz clock
   input  wire                                           clk_i        ,
@@ -48,8 +52,8 @@ module framing_synth #(
   output      axi_stream_req_t                          rx_axis_req_o,
   input       axi_stream_rsp_t                          rx_axis_rsp_i,
   // configuration (register interface)
-  input       eth_framing_reg_pkg::eth_framing_reg2hw_t reg2hw       , // Read from HW
-  output      eth_framing_reg_pkg::eth_framing_hw2reg_t hw2reg         // Write from HW
+  input       reg_req_t                                 reg_req_i    ,
+  output      reg_rsp_t                                 reg_rsp_o
 );
 
 // ---------------- axis streams for the framing module ----------------------
@@ -75,7 +79,10 @@ module framing_synth #(
 
   framing_top #(
     .axi_stream_req_t(s_framing_req_t),
-    .axi_stream_rsp_t(s_framing_rsp_t)
+    .axi_stream_rsp_t(s_framing_rsp_t),
+    .reg_req_t       (reg_req_t),
+    .reg_rsp_t       (reg_rsp_t),
+    .AW_REGBUS       (AW_REGBUS)
   ) i_framing_top (
     .rst_ni(rst_ni),
     .clk_i(clk_i),
@@ -105,9 +112,9 @@ module framing_synth #(
     .rx_axis_req_o(s_framing_rx_req),
     .rx_axis_rsp_i(s_framing_rx_rsp),
 
-    // Configuration Interface
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg)
+    // REGBUS Configuration Interface
+    .reg_req_i(reg_req_i),
+    .reg_rsp_o(reg_rsp_o)
   );
 
   axi_stream_dw_downsizer #(

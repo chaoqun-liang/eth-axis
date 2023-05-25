@@ -7,7 +7,11 @@ module framing_top #(
   /// AXI Stream in request struct
   parameter type axi_stream_req_t = logic,
   /// AXI Stream in response struct
-  parameter type axi_stream_rsp_t = logic
+  parameter type axi_stream_rsp_t = logic,
+  /// REGBUS
+  parameter type reg_req_t = logic,
+  parameter type reg_rsp_t = logic,
+  parameter int AW_REGBUS = 4
 ) (
   // Internal 125 MHz clock
   input  wire                                           clk_i        ,
@@ -35,10 +39,13 @@ module framing_top #(
   output      axi_stream_req_t                          rx_axis_req_o,
   input       axi_stream_rsp_t                          rx_axis_rsp_i,
   // configuration (register interface)
-  input       eth_framing_reg_pkg::eth_framing_reg2hw_t reg2hw       , // Read from HW
-  output      eth_framing_reg_pkg::eth_framing_hw2reg_t hw2reg         // Write from HW
+  input       reg_req_t                                 reg_req_i    ,
+  output      reg_rsp_t                                 reg_rsp_o
 );
   import eth_framing_reg_pkg::* ;
+
+  eth_framing_reg_pkg::eth_framing_reg2hw_t reg2hw; // Read from HW
+  eth_framing_reg_pkg::eth_framing_hw2reg_t hw2reg; // Write from HW
 
   logic        mac_gmii_tx_en;
   logic        accept_frame_q, accept_frame_d;
@@ -162,6 +169,20 @@ module framing_top #(
   end
 
 
+  eth_framing_reg_top #(
+    .reg_req_t(reg_req_t),
+    .reg_rsp_t(reg_rsp_t),
+    .AW(AW_REGBUS)
+  ) i_regs (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .reg_req_i(reg_req_i),
+    .reg_rsp_o(reg_rsp_o),
+    .reg2hw(reg2hw), // Write
+    .hw2reg(hw2reg), // Read
+    .devmode_i(1'b1)
+  );
+
   rgmii_soc rgmii_soc1 (
     .rst_int       (~rst_ni             ),
     .clk_int       (clk_i               ),
@@ -240,18 +261,29 @@ module framing_top_intf (
   REG_BUS.in            regbus_slave
 );
 
-  eth_framing_reg_pkg::eth_framing_reg2hw_t reg2hw; // Read from HW
-  eth_framing_reg_pkg::eth_framing_hw2reg_t hw2reg; // Write from HW
+// -------------------- REGBUS defines ----------------------
+  parameter int AW_REGBUS = 4;
+  localparam int DW_REGBUS = 32;
+  localparam int unsigned STRB_WIDTH = DW_REGBUS/8;
 
-  eth_framing_reg_top_intf i_framing_reg (
-    .clk_i       (clk_i       ),
-    .rst_ni      (rst_ni      ),
-    .regbus_slave(regbus_slave),
-    .reg2hw      (reg2hw      ),
-    .hw2reg      (hw2reg      ),
-    .devmode_i   (1'b1        )
-  );
+  `include "register_interface/typedef.svh"
+  `include "register_interface/assign.svh"
 
+  // Define structs for reg_bus
+  typedef logic [AW_REGBUS-1:0] addr_t;
+  typedef logic [DW_REGBUS-1:0] data_t;
+  typedef logic [STRB_WIDTH-1:0] strb_t;
+  `REG_BUS_TYPEDEF_ALL(reg_bus, addr_t, data_t, strb_t)
+
+  reg_bus_req_t s_reg_req;
+  reg_bus_rsp_t s_reg_rsp;
+
+  // Assign SV interface to structs
+  `REG_BUS_ASSIGN_TO_REQ(s_reg_req, regbus_slave)
+  `REG_BUS_ASSIGN_FROM_RSP(regbus_slave, s_reg_rsp)
+
+
+// -------------------- AXIS defines ----------------------
   localparam int unsigned DataWidth = 8;
   localparam int unsigned IdWidth   = 0;
   localparam int unsigned DestWidth = 0;
@@ -279,7 +311,10 @@ module framing_top_intf (
 
   framing_top #(
     .axi_stream_req_t(s_req_t),
-    .axi_stream_rsp_t(s_rsp_t)
+    .axi_stream_rsp_t(s_rsp_t),
+    .reg_req_t       (reg_bus_req_t),
+    .reg_rsp_t       (reg_bus_rsp_t),
+    .AW_REGBUS       (AW_REGBUS)
   ) i_framing_top (
     .rst_ni(rst_ni),
     .clk_i(clk_i),
@@ -309,9 +344,9 @@ module framing_top_intf (
     .rx_axis_req_o(s_rx_req),
     .rx_axis_rsp_i(s_rx_rsp),
 
-    // Configuration Interface
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg)
+    // REGBUS Configuration Interface
+    .reg_req_i(s_reg_req),
+    .reg_rsp_o(s_reg_rsp)
   );
 
 endmodule : framing_top_intf
