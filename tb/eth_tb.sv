@@ -1,7 +1,9 @@
 
 `timescale 1 ns/1 ps
 `include "axi_stream/assign.svh"
-//import reg_test::*; TODO
+`include "axi_stream/typedef.svh"
+`include "register_interface/typedef.svh"
+`include "register_interface/assign.svh"
 
 module eth_tb ();
   localparam tCK    = 8ns;
@@ -37,37 +39,6 @@ module eth_tb ();
   logic       tx_axis_tready;
   logic       tx_axis_tlast ;
 
-  // ----------------------- AXI-Stream BUS (Connections) -------------------------
-  // TX AXI-Stream Bus from Downsizer to tx_framing_top
-  AXI_STREAM_BUS #(
-    .DataWidth(DW_FRAMING),
-    .IdWidth  (ID_WIDTH),
-    .DestWidth(DEST_WIDTH),
-    .UserWidth(USER_WIDTH)
-  ) tx_axis_tx_framing();
-  // RX AXI-Stream Bus from tx_framing_top to Upsizer
-  AXI_STREAM_BUS #(
-    .DataWidth(DW_FRAMING),
-    .IdWidth  (ID_WIDTH),
-    .DestWidth(DEST_WIDTH),
-    .UserWidth(USER_WIDTH)
-  ) rx_axis_tx_framing();
-  // TX AXI-Stream Bus from Downsizer to rx_framing_top
-  AXI_STREAM_BUS #(
-    .DataWidth(DW_FRAMING),
-    .IdWidth  (ID_WIDTH),
-    .DestWidth(DEST_WIDTH),
-    .UserWidth(USER_WIDTH)
-  ) tx_axis_rx_framing();
-  // RX AXI-Stream Bus from rx_framing_top to Upsizer
-  AXI_STREAM_BUS #(
-    .DataWidth(DW_FRAMING),
-    .IdWidth  (ID_WIDTH),
-    .DestWidth(DEST_WIDTH),
-    .UserWidth(USER_WIDTH)
-  ) rx_axis_rx_framing();
-
-
   // ----------------------- AXI-Stream master drivers --------------------------
   typedef axi_stream_test::axi_stream_rand_tx #(
     .DataWidth (DW),
@@ -100,6 +71,12 @@ module eth_tb ();
 
   master_drv_t tx_framing_master_drv = new(tx_framing_master_dv, "tx_framing_master_dvr_tx_path");
 
+  eth_top_pkg::s_req_t tx_axis_tx_req_i;
+  eth_top_pkg::s_rsp_t tx_axis_tx_rsp_o;
+  `AXI_STREAM_ASSIGN_TO_REQ(tx_axis_tx_req_i, tx_axis_tx_big)
+  `AXI_STREAM_ASSIGN_FROM_RSP(tx_axis_tx_big, tx_axis_tx_rsp_o)
+
+
   // RX_FRAMING master driver
   AXI_STREAM_BUS_DV #(
     .DataWidth(DW),
@@ -120,6 +97,11 @@ module eth_tb ();
   `AXI_STREAM_ASSIGN(tx_axis_rx_big, rx_framing_master_dv);
 
   master_drv_t rx_framing_master_drv = new(rx_framing_master_dv, "rx_framing_master_dvr_tx_path");
+
+  eth_top_pkg::s_req_t tx_axis_rx_req_i;
+  eth_top_pkg::s_rsp_t tx_axis_rx_rsp_o;
+  `AXI_STREAM_ASSIGN_TO_REQ(tx_axis_rx_req_i, tx_axis_rx_big)
+  `AXI_STREAM_ASSIGN_FROM_RSP(tx_axis_rx_big, tx_axis_rx_rsp_o)
 
 
 // ----------------------- AXI-Stream slave drivers -------------------------
@@ -154,6 +136,11 @@ module eth_tb ();
 
   slave_drv_t tx_framing_slave_drv = new(tx_framing_slave_dv, "tx_framing_slave_dvr_rx_path");
 
+  eth_top_pkg::s_req_t rx_axis_tx_req_o;
+  eth_top_pkg::s_rsp_t rx_axis_tx_rsp_i;
+  `AXI_STREAM_ASSIGN_FROM_REQ(rx_axis_tx_big, rx_axis_tx_req_o)
+  `AXI_STREAM_ASSIGN_TO_RSP(rx_axis_tx_rsp_i, rx_axis_tx_big)
+
   // RX_FRAMING slave driver
   AXI_STREAM_BUS_DV #(
     .DataWidth(DW),
@@ -174,6 +161,11 @@ module eth_tb ();
   `AXI_STREAM_ASSIGN(rx_framing_slave_dv, rx_axis_rx_big);
 
   slave_drv_t rx_framing_slave_drv = new(rx_framing_slave_dv, "rx_framing_slave_dvr_rx_path");
+
+  eth_top_pkg::s_req_t rx_axis_rx_req_o;
+  eth_top_pkg::s_rsp_t rx_axis_rx_rsp_i;
+  `AXI_STREAM_ASSIGN_FROM_REQ(rx_axis_rx_big, rx_axis_rx_req_o)
+  `AXI_STREAM_ASSIGN_TO_RSP(rx_axis_rx_rsp_i, rx_axis_rx_big)
 
 
 // -------------------- (configuration) REG Drivers ------------------------
@@ -200,9 +192,17 @@ module eth_tb ();
   reg_bus_master_t reg_master_tx = new(reg_bus_mst_tx);
   reg_bus_master_t reg_master_rx = new(reg_bus_mst_rx);
 
+  eth_top_pkg::reg_bus_req_t rx_reg_req_i, tx_reg_req_i;
+  eth_top_pkg::reg_bus_rsp_t rx_reg_rsp_o, tx_reg_rsp_o;
+
+  `REG_BUS_ASSIGN_TO_REQ(rx_reg_req_i, reg_bus_mst_rx)
+  `REG_BUS_ASSIGN_TO_REQ(tx_reg_req_i, reg_bus_mst_tx)
+  `REG_BUS_ASSIGN_FROM_RSP(reg_bus_mst_rx, rx_reg_rsp_o)
+  `REG_BUS_ASSIGN_FROM_RSP(reg_bus_mst_tx, tx_reg_rsp_o)
+
 // -------------------------------- DUT ---------------------------------
   // TX ETH_RGMII
-  framing_top_intf tx_framing_top (
+  eth_top tx_eth_top (
     .rst_ni      (rst_ni         ),
     .clk_i       (clk_i          ),
     .clk90_int   (clk_90_i       ),
@@ -227,14 +227,18 @@ module eth_tb ();
     .phy_mdio_oe (               ),
     .phy_mdc     (               ),
 
-    .axis_tx     (tx_axis_tx_framing), // set tuser to 1'b0 to indicate no error
-    .axis_rx     (rx_axis_tx_framing),
+    .tx_axis_req_i(tx_axis_tx_req_i), // set tuser to 1'b0 to indicate no error
+    .tx_axis_rsp_o(tx_axis_tx_rsp_o),
+    .rx_axis_req_o(rx_axis_tx_req_o),
+    .rx_axis_rsp_i(rx_axis_tx_rsp_i),
 
-    .regbus_slave(reg_bus_mst_tx )  // Configuration Interface
+    // Configuration Interface
+    .reg_req_i    (tx_reg_req_i),
+    .reg_rsp_o    (tx_reg_rsp_o)
   );
 
    // RX ETH_RGMII
-  framing_top_intf rx_framing_top (
+    eth_top rx_eth_top (
     .rst_ni      (rst_ni         ),
     .clk_i       (clk_i          ),
     .clk90_int   (clk_90_i       ),
@@ -259,62 +263,14 @@ module eth_tb ();
     .phy_mdio_oe (               ),
     .phy_mdc     (               ),
 
-    .axis_tx     (tx_axis_rx_framing), // set tuser to 1'b0 to indicate no error
-    .axis_rx     (rx_axis_rx_framing),
+    .tx_axis_req_i(tx_axis_rx_req_i), // set tuser to 1'b0 to indicate no error
+    .tx_axis_rsp_o(tx_axis_rx_rsp_o),
+    .rx_axis_req_o(rx_axis_rx_req_o),
+    .rx_axis_rsp_i(rx_axis_rx_rsp_i),
 
-    .regbus_slave(reg_bus_mst_rx )  // Configuration Interface
-  );
-
-  axi_stream_dw_downsizer_intf #(
-    .DataWidthIn (DW        ),
-    .DataWidthOut(DW_FRAMING),
-    .IdWidth     (ID_WIDTH  ),
-    .DestWidth   (DEST_WIDTH),
-    .UserWidth   (USER_WIDTH)
-  ) axis_tx_framing_downsizer_inst (
-    .clk_i   (clk_i ),
-    .rst_ni  (rst_ni),
-    .axis_in (tx_axis_tx_big),
-    .axis_out(tx_axis_tx_framing )
-  );
-
-  axi_stream_dw_downsizer_intf #(
-    .DataWidthIn (DW        ),
-    .DataWidthOut(DW_FRAMING),
-    .IdWidth     (ID_WIDTH  ),
-    .DestWidth   (DEST_WIDTH),
-    .UserWidth   (USER_WIDTH)
-  ) axis_rx_framing_downsizer_inst (
-    .clk_i   (clk_i ),
-    .rst_ni  (rst_ni),
-    .axis_in (tx_axis_rx_big),
-    .axis_out(tx_axis_rx_framing )
-  );
-
-  axi_stream_dw_upsizer_intf #(
-    .DataWidthIn (DW_FRAMING),
-    .DataWidthOut(DW        ),
-    .IdWidth     (ID_WIDTH  ),
-    .DestWidth   (DEST_WIDTH),
-    .UserWidth   (USER_WIDTH)
-  ) axis_tx_framing_upsizer_inst (
-    .clk_i   (clk_i ),
-    .rst_ni  (rst_ni),
-    .axis_in (rx_axis_tx_framing),
-    .axis_out(rx_axis_tx_big)
-  );
-
-  axi_stream_dw_upsizer_intf #(
-    .DataWidthIn (DW_FRAMING),
-    .DataWidthOut(DW        ),
-    .IdWidth     (ID_WIDTH  ),
-    .DestWidth   (DEST_WIDTH),
-    .UserWidth   (USER_WIDTH)
-  ) axis_rx_framing_upsizer_inst (
-    .clk_i   (clk_i ),
-    .rst_ni  (rst_ni),
-    .axis_in (rx_axis_rx_framing),
-    .axis_out(rx_axis_rx_big)
+    // Configuration Interface
+    .reg_req_i    (rx_reg_req_i),
+    .reg_rsp_o    (rx_reg_rsp_o)
   );
 
 // ------------------------- DATA ----------------------------

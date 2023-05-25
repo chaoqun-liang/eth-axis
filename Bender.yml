@@ -39,12 +39,12 @@ sources:
   - rtl/rgmii_phy_if.sv
   - rtl/rgmii_soc.sv
   - rtl/ssio_ddr_in.sv
+  - rtl/eth_top_pkg.sv
+  - rtl/eth_top.sv
 
   - target: synthesis
     files:
       - ../../macro_wrap/tc_clk_gf22.sv
-      - rtl/framing_synth_pkg.sv
-      - rtl/framing_synth.sv
 
   - target: test
     files:

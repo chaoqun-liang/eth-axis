@@ -7,12 +7,14 @@
 
 `include "axi_stream/assign.svh"
 `include "axi_stream/typedef.svh"
+`include "register_interface/typedef.svh"
+`include "register_interface/assign.svh"
 
-module framing_synth #(
+module eth_top #(
   /// AXI Stream in request struct
-  parameter type axi_stream_req_t = framing_synth_pkg::s_req_t,
+  parameter type axi_stream_req_t = eth_top_pkg::s_req_t,
   /// AXI Stream in response struct
-  parameter type axi_stream_rsp_t = framing_synth_pkg::s_rsp_t,
+  parameter type axi_stream_rsp_t = eth_top_pkg::s_rsp_t,
   /// AXI Stream Data Width
   parameter int unsigned DataWidth = 64,
   /// AXI Stream Id Width
@@ -22,8 +24,8 @@ module framing_synth #(
   /// AXI Stream User Width
   parameter int unsigned UserWidth = 1,
   /// REGBUS
-  parameter type reg_req_t = framing_synth_pkg::reg_bus_req_t,
-  parameter type reg_rsp_t = framing_synth_pkg::reg_bus_rsp_t,
+  parameter type reg_req_t = eth_top_pkg::reg_bus_req_t,
+  parameter type reg_rsp_t = eth_top_pkg::reg_bus_rsp_t,
   parameter int AW_REGBUS = 4
 ) (
   // Internal 125 MHz clock
@@ -155,4 +157,4 @@ module framing_synth #(
     .out_rsp_i(rx_axis_rsp_i)
   );
 
-endmodule : framing_synth
+endmodule : eth_top
