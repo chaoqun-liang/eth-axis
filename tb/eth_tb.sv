@@ -208,11 +208,12 @@ module eth_tb ();
 
 // -------------------------------- DUT ---------------------------------
   // TX ETH_RGMII
-  eth_top tx_eth_top (
+  eth_top_synth tx_eth_top_synth (
     .rst_ni      (rst_ni         ),
     .clk_i       (clk_i          ),
-    .clk90_int   (clk_90_i       ),
-    .clk_200_int (clk_200MHz_i   ),
+    .clk90_i     (clk_90_i       ),
+    .clk_200MHz_i(clk_200MHz_i   ),
+
 
     // Ethernet: 1000BASE-T RGMII
     .phy_rx_clk  (eth_rxck       ),
@@ -232,23 +233,46 @@ module eth_tb ();
     .phy_mdio_o  (               ),
     .phy_mdio_oe (               ),
     .phy_mdc     (               ),
-
-    .tx_axis_req_i(tx_axis_tx_req_i), // set tuser to 1'b0 to indicate no error
-    .tx_axis_rsp_o(tx_axis_tx_rsp_o),
-    .rx_axis_req_o(rx_axis_tx_req_o),
-    .rx_axis_rsp_i(rx_axis_tx_rsp_i),
+    // TX AXIS
+    .tx_axis_tdata_i (tx_axis_tx_req_i.t.data),
+    .tx_axis_tstrb_i (tx_axis_tx_req_i.t.strb),
+    .tx_axis_tkeep_i (tx_axis_tx_req_i.t.keep),
+    .tx_axis_tlast_i (tx_axis_tx_req_i.t.last),
+    .tx_axis_tid_i   (tx_axis_tx_req_i.t.id),
+    .tx_axis_tdest_i (tx_axis_tx_req_i.t.dest),
+    .tx_axis_tuser_i (tx_axis_tx_req_i.t.user), // set tuser to 1'b0 to indicate no error
+    .tx_axis_tvalid_i(tx_axis_tx_req_i.tvalid),
+    .tx_axis_tready_o(tx_axis_tx_rsp_o.tready),
+    // RX AXIS
+    .rx_axis_tdata_o (rx_axis_tx_req_o.t.data),
+    .rx_axis_tstrb_o (rx_axis_tx_req_o.t.strb),
+    .rx_axis_tkeep_o (rx_axis_tx_req_o.t.keep),
+    .rx_axis_tlast_o (rx_axis_tx_req_o.t.last),
+    .rx_axis_tid_o   (rx_axis_tx_req_o.t.id),
+    .rx_axis_tdest_o (rx_axis_tx_req_o.t.dest),
+    .rx_axis_tuser_o (rx_axis_tx_req_o.t.user),
+    .rx_axis_tvalid_o(rx_axis_tx_req_o.tvalid),
+    .rx_axis_tready_i(rx_axis_tx_rsp_i.tready),
 
     // Configuration Interface
-    .reg_req_i    (tx_reg_req_i),
-    .reg_rsp_o    (tx_reg_rsp_o)
+    .reg_bus_addr_i  (tx_reg_req_i.addr),
+    .reg_bus_write_i (tx_reg_req_i.write),
+    .reg_bus_wdata_i (tx_reg_req_i.wdata),
+    .reg_bus_valid_i (tx_reg_req_i.valid),
+    .reg_bus_wstrb_i (tx_reg_req_i.wstrb),
+    .reg_bus_rdata_o (tx_reg_rsp_o.rdata),
+    .reg_bus_ready_o (tx_reg_rsp_o.ready),
+    .reg_bus_error_o (tx_reg_rsp_o.error)
   );
 
+
+
    // RX ETH_RGMII
-    eth_top rx_eth_top (
+    eth_top_synth rx_eth_top_synth (
     .rst_ni      (rst_ni         ),
     .clk_i       (clk_i          ),
-    .clk90_int   (clk_90_i       ),
-    .clk_200_int (clk_200MHz_i   ),
+    .clk90_i     (clk_90_i       ),
+    .clk_200MHz_i(clk_200MHz_i   ),
 
     // Ethernet: 1000BASE-T RGMII
     .phy_rx_clk  (eth_txck       ),
@@ -269,14 +293,36 @@ module eth_tb ();
     .phy_mdio_oe (               ),
     .phy_mdc     (               ),
 
-    .tx_axis_req_i(tx_axis_rx_req_i), // set tuser to 1'b0 to indicate no error
-    .tx_axis_rsp_o(tx_axis_rx_rsp_o),
-    .rx_axis_req_o(rx_axis_rx_req_o),
-    .rx_axis_rsp_i(rx_axis_rx_rsp_i),
+    // TX AXIS
+    .tx_axis_tdata_i (tx_axis_rx_req_i.t.data),
+    .tx_axis_tstrb_i (tx_axis_rx_req_i.t.strb),
+    .tx_axis_tkeep_i (tx_axis_rx_req_i.t.keep),
+    .tx_axis_tlast_i (tx_axis_rx_req_i.t.last),
+    .tx_axis_tid_i   (tx_axis_rx_req_i.t.id),
+    .tx_axis_tdest_i (tx_axis_rx_req_i.t.dest),
+    .tx_axis_tuser_i (tx_axis_rx_req_i.t.user), // set tuser to 1'b0 to indicate no error
+    .tx_axis_tvalid_i(tx_axis_rx_req_i.tvalid),
+    .tx_axis_tready_o(tx_axis_rx_rsp_o.tready),
+    // RX AXIS
+    .rx_axis_tdata_o (rx_axis_rx_req_o.t.data),
+    .rx_axis_tstrb_o (rx_axis_rx_req_o.t.strb),
+    .rx_axis_tkeep_o (rx_axis_rx_req_o.t.keep),
+    .rx_axis_tlast_o (rx_axis_rx_req_o.t.last),
+    .rx_axis_tid_o   (rx_axis_rx_req_o.t.id),
+    .rx_axis_tdest_o (rx_axis_rx_req_o.t.dest),
+    .rx_axis_tuser_o (rx_axis_rx_req_o.t.user),
+    .rx_axis_tvalid_o(rx_axis_rx_req_o.tvalid),
+    .rx_axis_tready_i(rx_axis_rx_rsp_i.tready),
 
     // Configuration Interface
-    .reg_req_i    (rx_reg_req_i),
-    .reg_rsp_o    (rx_reg_rsp_o)
+    .reg_bus_addr_i  (rx_reg_req_i.addr),
+    .reg_bus_write_i (rx_reg_req_i.write),
+    .reg_bus_wdata_i (rx_reg_req_i.wdata),
+    .reg_bus_valid_i (rx_reg_req_i.valid),
+    .reg_bus_wstrb_i (rx_reg_req_i.wstrb),
+    .reg_bus_rdata_o (rx_reg_rsp_o.rdata),
+    .reg_bus_ready_o (rx_reg_rsp_o.ready),
+    .reg_bus_error_o (rx_reg_rsp_o.error)
   );
 
 // ------------------------- DATA ----------------------------

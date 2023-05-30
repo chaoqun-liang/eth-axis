@@ -41,6 +41,7 @@ sources:
   - rtl/ssio_ddr_in.sv
   - rtl/eth_top_pkg.sv
   - rtl/eth_top.sv
+  - rtl/eth_top_synth.sv
 
   - target: synthesis
     files:
@@ -48,4 +49,11 @@ sources:
 
   - target: test
     files:
-    - tb/eth_tb.sv
+      - tb/eth_tb.sv
+
+  - target: gate
+    files:
+      - ../../synopsys/netlists/eth_top.v
+      - rtl/eth_top_pkg.sv
+      - tb/eth_tb.sv
+
