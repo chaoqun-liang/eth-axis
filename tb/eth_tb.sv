@@ -9,6 +9,9 @@ module eth_tb ();
   localparam tCK    = 8ns;
   localparam tCK200 = 5ns;
 
+  localparam TEST_TIME = 6ns;
+  localparam APPLY_TIME = 2ns;
+
   localparam int unsigned REG_BUS_DW = 32;
   localparam int unsigned REG_BUS_AW = 4;
 
@@ -45,7 +48,8 @@ module eth_tb ();
     .IdWidth   (ID_WIDTH),
     .DestWidth (DEST_WIDTH),
     .UserWidth (USER_WIDTH),
-    .TestTime  (tCK/2),
+    .TestTime  (TEST_TIME),
+    .ApplTime  (APPLY_TIME),
     .MinWaitCycles(0),
     .MaxWaitCycles(50)
   ) master_drv_t;
@@ -110,7 +114,8 @@ module eth_tb ();
     .IdWidth   (ID_WIDTH),
     .DestWidth (DEST_WIDTH),
     .UserWidth (USER_WIDTH),
-    .TestTime  (tCK/2),
+    .TestTime  (TEST_TIME),
+    .ApplTime  (APPLY_TIME),
     .MinWaitCycles(0),
     .MaxWaitCycles(50)
   ) slave_drv_t;
@@ -186,7 +191,8 @@ module eth_tb ();
   typedef reg_test::reg_driver #(
      .AW(REG_BUS_AW),
      .DW(REG_BUS_DW),
-     .TT(tCK)
+     .TT(TEST_TIME),
+     .TA(APPLY_TIME)
   ) reg_bus_master_t;
 
   reg_bus_master_t reg_master_tx = new(reg_bus_mst_tx);
