@@ -22,8 +22,6 @@ bender script vsim -t test \
     --vlog-arg="-svinputport=compat" \
     --vlog-arg="-override_timescale 1ns/1ps" \
     --vlog-arg="-suppress 2583" \
-    --vlog-arg="+nospecify" \
-    --vlog-arg="+notimingchecks" \
     > compile.tcl
 echo 'return 0' >> compile.tcl
 

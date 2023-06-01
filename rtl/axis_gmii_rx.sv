@@ -313,11 +313,9 @@ always_ff @(posedge clk or posedge rst) begin
             end
         end
     end
+end
 
-    m_axis_tdata_reg <= m_axis_tdata_next;
-    m_axis_tlast_reg <= m_axis_tlast_next;
-    m_axis_tuser_reg <= m_axis_tuser_next;
-
+always_ff @(posedge clk) begin
     // delay input
     if (clk_enable) begin
         if (mii_select) begin
@@ -350,6 +348,13 @@ always_ff @(posedge clk or posedge rst) begin
             gmii_rx_er_d3 <= gmii_rx_er_d2;
             gmii_rx_er_d4 <= gmii_rx_er_d3;
         end
+        m_axis_tdata_reg <= m_axis_tdata_next;
+        m_axis_tlast_reg <= m_axis_tlast_next;
+        m_axis_tuser_reg <= m_axis_tuser_next;
+    end else begin
+        m_axis_tdata_reg <= m_axis_tdata_next;
+        m_axis_tlast_reg <= m_axis_tlast_next;
+        m_axis_tuser_reg <= m_axis_tuser_next;
     end
 end
 
