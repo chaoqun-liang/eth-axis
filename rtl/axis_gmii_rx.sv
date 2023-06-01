@@ -246,7 +246,7 @@ always @* begin
     end
 end
 
-always @(posedge clk) begin
+always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
         state_reg <= STATE_IDLE;
 

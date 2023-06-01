@@ -375,11 +375,6 @@ module eth_tb ();
   // ------------------------ BEGINNING OF SIMULATION ------------------------
   initial begin
     // General reset
-    @(posedge clk_i);
-    rst_ni <= 0;
-    repeat(10) @(posedge clk_i);
-    rst_ni <= 1;
-    @(posedge clk_i);
 
     // Reset axi master and reg master
     reg_master_tx.reset_master();
@@ -390,6 +385,13 @@ module eth_tb ();
     // Slave drivers RX-paths
     tx_framing_slave_drv.reset();
     rx_framing_slave_drv.reset();
+
+    @(posedge clk_i);
+    rst_ni <= 0;
+    repeat(10000) @(posedge clk_i);
+    rst_ni <= 1;
+    @(posedge clk_i);
+
     // set receive array to 0;
     reset_recv_array();
     repeat(5) @(posedge clk_i);

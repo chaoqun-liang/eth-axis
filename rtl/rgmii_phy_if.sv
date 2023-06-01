@@ -111,7 +111,7 @@ reg rgmii_tx_clk_fall;
 
 reg [5:0] count_reg, count_next;
 
-always @(posedge clk) begin
+always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
         rgmii_tx_clk_1 <= 1'b1;
         rgmii_tx_clk_2 <= 1'b0;

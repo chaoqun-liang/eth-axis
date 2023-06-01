@@ -351,7 +351,7 @@ always @* begin
     end
 end
 
-always @(posedge clk) begin
+always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
         state_reg <= STATE_IDLE;
 
@@ -364,6 +364,12 @@ always @(posedge clk) begin
 
         crc_state <= 32'hFFFFFFFF;
         fcs_reg <= 32'hFFFFFFFF;
+        ifg_reg <= 'd0;
+
+        mii_odd_reg <= 1'b0;
+        mii_msn_reg <= 'd0;
+        s_tdata_reg <= 'd0;
+        gmii_txd_reg <= 'd0;
     end else begin
         state_reg <= state_next;
 
@@ -382,14 +388,12 @@ always @(posedge clk) begin
         end else if (update_crc) begin
             crc_state <= crc_next;
         end
+
+        mii_odd_reg <= mii_odd_next;
+        mii_msn_reg <= mii_msn_next;
+        s_tdata_reg <= s_tdata_next;
+        gmii_txd_reg <= gmii_txd_next;
     end
-
-    mii_odd_reg <= mii_odd_next;
-    mii_msn_reg <= mii_msn_next;
-
-    s_tdata_reg <= s_tdata_next;
-
-    gmii_txd_reg <= gmii_txd_next;
 end
 
 endmodule

@@ -45,3 +45,5 @@ for x in axi_pkg; do
     }" < compile.tcl > compile.patched.tcl
   mv compile{.patched,}.tcl
 done
+
+mv compile.tcl ../../modelsim/compile.tcl

@@ -130,7 +130,7 @@ end
 // PHY speed detection
 reg [2:0] rx_prescale = 3'd0;
 
-always @(posedge rx_clk) begin
+always_ff @(posedge rx_clk or posedge gtx_rst) begin
     if (gtx_rst) begin
         rx_prescale <= 3'd0;
     end else begin
@@ -151,7 +151,7 @@ end
 reg [6:0] rx_speed_count_1;
 reg [1:0] rx_speed_count_2;
 
-always @(posedge gtx_clk) begin
+always_ff @(posedge gtx_clk or posedge gtx_rst) begin
     if (gtx_rst) begin
         rx_speed_count_1 <= 0;
         rx_speed_count_2 <= 0;

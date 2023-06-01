@@ -53,7 +53,7 @@ sources:
 
   - target: gate
     files:
-      - ../../synopsys/netlists/eth_top.v
+      - ../../synopsys/netlists/eth_top_synth.v
       - rtl/eth_top_pkg.sv
       - tb/eth_tb.sv
 
