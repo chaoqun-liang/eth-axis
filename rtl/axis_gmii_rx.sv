@@ -87,26 +87,26 @@ reg [2:0] state_reg, state_next;
 reg reset_crc;
 reg update_crc;
 
-   reg mii_odd;
-   reg mii_locked;
+reg mii_odd;
+reg mii_locked;
 
-   reg [7:0] gmii_rxd_d0;
-   reg [7:0] gmii_rxd_d1;
-   reg [7:0] gmii_rxd_d2;
-   reg [7:0] gmii_rxd_d3;
-   reg [7:0] gmii_rxd_d4;
+reg [7:0] gmii_rxd_d0;
+reg [7:0] gmii_rxd_d1;
+reg [7:0] gmii_rxd_d2;
+reg [7:0] gmii_rxd_d3;
+reg [7:0] gmii_rxd_d4;
 
-   reg       gmii_rx_dv_d0;
-   reg       gmii_rx_dv_d1;
-   reg       gmii_rx_dv_d2;
-   reg       gmii_rx_dv_d3;
-   reg       gmii_rx_dv_d4;
+reg       gmii_rx_dv_d0;
+reg       gmii_rx_dv_d1;
+reg       gmii_rx_dv_d2;
+reg       gmii_rx_dv_d3;
+reg       gmii_rx_dv_d4;
 
-   reg       gmii_rx_er_d0;
-   reg       gmii_rx_er_d1;
-   reg       gmii_rx_er_d2;
-   reg       gmii_rx_er_d3;
-   reg       gmii_rx_er_d4;
+reg       gmii_rx_er_d0;
+reg       gmii_rx_er_d1;
+reg       gmii_rx_er_d2;
+reg       gmii_rx_er_d3;
+reg       gmii_rx_er_d4;
 
 reg [7:0] m_axis_tdata_reg, m_axis_tdata_next;
 reg m_axis_tvalid_reg, m_axis_tvalid_next;

@@ -45,8 +45,8 @@ module eth_top #(
   input  wire                                           phy_pme_n    ,
   // MDIO
   input  wire                                           phy_mdio_i   ,
-  output      reg                                       phy_mdio_o   ,
-  output      reg                                       phy_mdio_oe  ,
+  output reg                                            phy_mdio_o   ,
+  output reg                                            phy_mdio_oe  ,
   output wire                                           phy_mdc      ,
   // AXIS TX/RX
   input       axi_stream_req_t                          tx_axis_req_i,
@@ -64,7 +64,7 @@ module eth_top #(
   localparam int unsigned FramingDestWidth = 0;
   localparam int unsigned FramingUserWidth = 1;
 
-  // AXI stream channels typedefs
+// AXI stream channels typedefs
   typedef logic [FramingDataWidth-1:0]   framing_tdata_t;
   typedef logic [FramingDataWidth/8-1:0] framing_tstrb_t;
   typedef logic [FramingDataWidth/8-1:0] framing_tkeep_t;
@@ -74,9 +74,10 @@ module eth_top #(
 
   `AXI_STREAM_TYPEDEF_ALL(s_framing, framing_tdata_t, framing_tstrb_t, framing_tkeep_t, framing_tid_t, framing_tdest_t, framing_tuser_t)
 
-  // AXI stream signals
+// AXI stream signals
   s_framing_req_t s_framing_tx_req, s_framing_rx_req;
   s_framing_rsp_t s_framing_tx_rsp, s_framing_rx_rsp;
+
 // ---------------- END: axis streams for the framing module ----------------------
 
   framing_top #(

@@ -1,0 +1,10 @@
+Thu Nov 30 17:12:51 CET 2023
+Trace back: can't read "vsimPriv(.main_pane.wave.interior.cs.body.pw.wf.grid.row0,name.data:tree)": no such element in array
+    while executing
+"Wave::SetDefaultTree $vsimPriv($widget:tree)"
+    (procedure "Wave::Name1Down" line 12)
+    invoked from within
+"Wave::Name1Down .main_pane.wave.interior.cs.body.pw.wf.grid.row0,name.data 98 449"
+    (command bound to event)
+  <2:/usr/pack/questa-2019.3-kgf/questasim/linux_x86_64/tk8.6/bgerror.tcl:106: ::tkerror {can't read "vsimPriv(.main_pane.wave.interior.cs.body.pw.wf.grid.row0,name.data:tree)": no such element in array}
+  <1:eval:1: ::tk::dialog::error::bgerror {can't read "vsimPriv(.main_pane.wave.interior.cs.body.pw.wf.grid.row0,name.data:tree)": no such element in array}
