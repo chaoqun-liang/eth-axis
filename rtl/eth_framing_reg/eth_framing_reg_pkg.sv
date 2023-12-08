@@ -65,7 +65,7 @@ package eth_framing_reg_pkg;
 
   // Register index
   typedef enum int {
-    ETH_FRAMING_CONFIG0,
+    ETH_FRAMING_CONFIG0,                                                                                                              
     ETH_FRAMING_CONFIG1,
     ETH_FRAMING_CONFIG2,
     ETH_FRAMING_CONFIG3

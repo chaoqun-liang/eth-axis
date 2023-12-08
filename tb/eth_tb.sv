@@ -14,7 +14,7 @@ module eth_tb ();
   localparam APPLY_TIME = 2ns;
 
   localparam int unsigned REG_BUS_DW = 32;
-  localparam int unsigned REG_BUS_AW = 4;
+  localparam int unsigned REG_BUS_AW = 8;
 
   localparam int unsigned DW = 64;
   localparam int unsigned DW_FRAMING = 8;

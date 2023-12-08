@@ -15,6 +15,7 @@ dependencies:
   register_interface : { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.8 }
   common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
   axi_stream: { git: "git@github.com:pulp-platform/axi_stream.git", rev: "472751f550e3918215603e21734fe0ece3c66f79" }
+  iDMA: { git: "git@github.com:pulp-platform/iDMA.git", rev: "8cd8f946897c62cbf58ddfcb81332241e9b860e2" }
 
 export_include_dirs:
   - include
@@ -24,8 +25,8 @@ sources:
   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
   # levels 1 and 0, etc. Files within a level are ordered alphabetically.
   # Level 0
-  - rtl/eth_framing_reg/eth_framing_reg_pkg.sv
-  - rtl/eth_framing_reg/eth_framing_reg_top.sv
+  - rtl/eth_idma_reg/eth_idma_reg_pkg.sv
+  - rtl/eth_idma_reg/eth_idma_reg_top.sv
   - rtl/axis_gmii_rx.sv
   - rtl/axis_gmii_tx.sv
   - rtl/eth_mac_1g_rgmii_fifo.sv
@@ -42,6 +43,7 @@ sources:
   - rtl/eth_top_pkg.sv
   - rtl/eth_top.sv
   - rtl/eth_top_synth.sv
+  - rtl/eth_idma_wrap.sv
 
   - target: synthesis
     files:
@@ -49,11 +51,12 @@ sources:
 
   - target: test
     files:
-      - tb/eth_tb.sv
+      - tb/eth_idma_tb.sv
+      - tb/fix_eth.sv
 
   - target: gate
     files:
-      - ../../synopsys/netlists/eth_top_synth.v
-      - rtl/eth_top_pkg.sv
-      - tb/eth_tb.sv
+      - ../../synopsys/netlists/eth_idma_wrap.v
+      - rtl/eth_idma_pkg.sv
+      - tb/eth_idma_tb.sv
 
