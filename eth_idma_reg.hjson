@@ -8,7 +8,7 @@
     regwidth: "64",
     registers: [
         { name: "maclo_addr",
-          desc: "Configures the lower 4 bytes of the devices MAC address",
+          desc: "lower 4 bytes of the devices MAC address",
           swaccess: "rw",
           hwaccess: "hro",
           fields: [
@@ -19,7 +19,7 @@
           ]
         },
         { name: "machi_mdio",
-          desc: "Configures the: upper 2 bytes of the devices MAC address, promiscuous flag, MDIO interface",
+          desc: "upper 2 bytes of the devices MAC address, promiscuous flag, MDIO interface",
           swaccess: "rw",
           hwaccess: "hro",
           fields: [
@@ -69,6 +69,7 @@
             { bits: "31:0",
               name: "src_addr",
               desc: "Source Address"
+              resval: "0000"
             }
           ]
         },
@@ -80,10 +81,11 @@
             { bits: "31:0",
               name: "dst_addr",
               desc: "Destination Address"
+              resval: "0000"
             }
           ]
         },
-        { name: "num_bytes",
+        { name: "length",
           desc: "Number of bytes",
           swaccess: "rw",
           hwaccess: "hro",
@@ -91,47 +93,150 @@
             { bits: "31:0",
               name: "num_bytes",
               desc: "Number of bytes"
+              resval: "0000"
             }
           ]
         },
-        { name: "status",
-          desc: "DMA Status",
-          swaccess: "ro",
-          hwaccess: "hwo",
-          hwext: "true",
+        { name: "src_protocol",
+          desc: "Source protocol of iDMA",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "2:0",
+              name: "src_protocol",
+              desc: "iDMA source protocol"
+              resval: "000"
+            }
+          ]
+        },
+        { name: "dst_protocol",
+          desc: "Destination protocol of iDMA",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "2:0",
+              name: "dst_protocol",
+              desc: "iDMA destination protocol "
+              resval: "000"
+            }
+          ]
+        },
+        { name: "axi_id",
+          desc: "iDMA transaction ID",
+          swaccess: "rw",
+          hwaccess: "hrw",
           fields: [
             { bits: "0",
-              name: "busy",
-              desc: "DMA busy"
+              name: "axi_id",
+              desc: "transaction ID"
+              resval: "0"
             }
           ]
         },
-        { name: "next_id",
-          desc: "Next ID, launches transfer, returns 0 if transfer not set up properly.",
-          swaccess: "ro",
-          hwaccess: "hrw",
-          hwext: "true",
-          hwre: "true",
+        { name: "opt_src",
+          desc: "src options",
+          swaccess: "rw",
+          hwaccess: "hro",
           fields: [
-            { bits: "63:0",
-              name: "next_id",
-              desc: "Next ID, launches transfer, returns 0 if transfer not set up properly."
+           { bits: "1:0", name: "burst",
+             desc: "burst opt"
+             resval: "0"
+           },
+           { bits: "5:2", name: "cache",
+             desc: "cache opt"
+             resval: "0"
+           },
+           { bits: "6", name: "lock",
+             desc: "lock opt"
+             resval: "0"
+           },
+           { bits: "9:7", name: "prot",
+             desc: "prot opt"
+             resval: "0"
+           },
+           { bits: "13:10", name: "qos",
+             desc: "qos opt"
+             resval: "0"
+           }
+           { bits: "17:14", name: "region",
+             desc: "region opt"
+             resval: "0"
+           }
+          ]
+        },
+        { name: "opt_dst",
+          desc: "dst options",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+           { bits: "1:0", name: "burst",
+             desc: "burst opt"
+             resval: "0"
+           },
+           { bits: "5:2", name: "cache",
+             desc: "cache opt"
+             resval: "0"
+           },
+           { bits: "6", name: "lock",
+             desc: "lock opt"
+             resval: "0"
+           },
+           { bits: "9:7", name: "prot",
+             desc: "prot opt"
+             resval: "0"
+           },
+           { bits: "13:10", name: "qos",
+             desc: "qos opt"
+             resval: "0"
+           }
+           { bits: "17:14", name: "region",
+             desc: "region opt"
+             resval: "0"
+           }
+          ]
+        }, 
+        {  name: "beo",
+           desc: "backend options",
+           swaccess: "rw",
+           hwaccess: "hro",
+           fields: [
+            { bits: "0", name: "decouple_aw",
+              desc: "aw decouple enable"
+              resval: "0"
+            },
+            { bits: "1", name: "decouple_rw",
+              desc: "rw decouple enable"
+              resval: "0"
+            },
+            { bits: "4:2", name: "src_max_llen",
+              desc: "source max length"
+              resval: "0"
+            },
+            { bits: "7:5", name: "dst_max_llen",
+              desc: "destination max length"
+              resval: "0"
+            },
+            { bits: "8", name: "src_reduce_len",
+              desc: "srouce reduce length"
+              resval: "0"
+            }
+            { bits: "9", name: "dst_reduce_len",
+              desc: "destination reduce length"
+              resval: "0"
+            }
+           ]
+        },   
+        { name:"last",
+          desc: "last transfer",
+          swaccess: "rw",
+          hwaccess: "hrw",
+          fields: [
+            { bits: "0",
+              name: "last",
+              desc: "last transfer"
             }
           ]
         },
-        { name: "done",
-          desc: "Get ID of finished transactions.",
-          swaccess: "ro",
-          hwaccess: "hrw",
-          hwext: "true",
-          hwre: "true",
-          fields: [
-            { bits: "63:0",
-              name: "done",
-              desc: "Get ID of finished transactions."
-            }
-          ]
-        }
   ]
 }
 
