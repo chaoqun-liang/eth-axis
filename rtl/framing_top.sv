@@ -42,10 +42,10 @@ module framing_top #(
   input       reg_req_t                                 reg_req_i    ,
   output      reg_rsp_t                                 reg_rsp_o
 );
-  import eth_framing_reg_pkg::* ;
 
-  eth_framing_reg_pkg::eth_framing_reg2hw_t reg2hw; // Read from HW
-  eth_framing_reg_pkg::eth_framing_hw2reg_t hw2reg; // Write from HW
+  import eth_idma_reg_pkg::* ;
+  eth_idma_reg_pkg::eth_idma_reg2hw_t reg2hw; // Write
+  eth_idma_reg_pkg::eth_idma_hw2reg_t hw2reg; // Read
 
   logic        mac_gmii_tx_en;
   logic        accept_frame_q, accept_frame_d;
