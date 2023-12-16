@@ -6,11 +6,12 @@
 
 // axi + regbus
 `include "axi/assign.svh"
+`include "axi/typedef.svh"
 `include "idma/typedef.svh"
 `include "register_interface/typedef.svh"
 `include "register_interface/assign.svh"
 
-module tb_eth_idma
+module eth_idma_tb
   import idma_pkg::*;
   import eth_idma_pkg::*; #(
   parameter int unsigned DataWidth           = 64,
@@ -25,7 +26,7 @@ module tb_eth_idma
   parameter bit          MaskInvalidData     = 1,
   parameter bit          HardwareLegalizer   = 1,
   parameter bit          RejectZeroTransfers = 1,
-  parameter bit          ErrorHandling       = 0,
+  parameter bit          ErrorHandling       = 0
 );
 
   // timing parameters
@@ -41,7 +42,7 @@ module tb_eth_idma
   
   // regbus
   localparam int unsigned REG_BUS_DW = 64;
-  localparam int unsigned REG_BUS_AW = 4;
+  localparam int unsigned REG_BUS_AW = 8;
   
   // parse error handling caps
   localparam idma_pkg::error_cap_e ErrorCap = ErrorHandling ? idma_pkg::ERROR_HANDLING :
@@ -67,44 +68,6 @@ module tb_eth_idma
 `AXI_TYPEDEF_REQ_T(axi_req_t, axi_aw_chan_t, axi_w_chan_t, axi_ar_chan_t)
 `AXI_TYPEDEF_RESP_T(axi_rsp_t, axi_b_chan_t, axi_r_chan_t)
 
-  // Meta Channel Widths
-    localparam int unsigned axi_aw_chan_width = axi_pkg::aw_width(AddrWidth, AxiIdWidth, UserWidth);
-    localparam int unsigned axi_ar_chan_width = axi_pkg::ar_width(AddrWidth, AxiIdWidth, UserWidth);
-    localparam int unsigned axi_stream_t_chan_width = $bits(axi_stream_t_chan_t);
-
-    function int unsigned max_width(input int unsigned a, b);
-        return (a > b) ? a : b;
-    endfunction
-
-    typedef struct packed {
-        axi_ar_chan_t ar_chan;
-        logic[max_width(axi_ar_chan_width, axis_t_chan_width)-axi_ar_chan_width:0] padding;
-    } axi_read_ar_chan_padded_t;
-
-    typedef struct packed {
-        axis_t_chan_t t_chan;
-        logic[max_width(axi_ar_chan_width, axis_t_chan_width)-axis_t_chan_width:0] padding;
-    } axis_read_t_chan_padded_t;
-
-    typedef union packed {
-        axi_read_ar_chan_padded_t axi;
-        axis_read_t_chan_padded_t axis;
-    } read_meta_channel_t;
-
-    typedef struct packed {
-        axi_aw_chan_t aw_chan;
-        logic[max_width(axi_aw_chan_width, axis_t_chan_width)-axi_aw_chan_width:0] padding;
-    } axi_write_aw_chan_padded_t;
-
-    typedef struct packed {
-        axis_t_chan_t t_chan;
-        logic[max_width(axi_aw_chan_width, axis_t_chan_width)-axis_t_chan_width:0] padding;
-    } axis_write_t_chan_padded_t;
-
-    typedef union packed {
-        axi_write_aw_chan_padded_t axi;
-        axis_write_t_chan_padded_t axis;
-    } write_meta_channel_t;
 
    //--------------------------------------
     // Physical Signals to the DUT
@@ -116,6 +79,7 @@ module tb_eth_idma
   logic       s_clk_125MHz_90;
   logic       s_clk_200MHz;
   logic       s_rst_n;
+  logic        done            = 0;
 
   logic       eth_rxck;
   logic       eth_rxctl;
@@ -127,19 +91,7 @@ module tb_eth_idma
 
   logic tx_idma_req_ready , tx_idma_rsp_ready;
   logic rx_idma_req_ready , rx_idma_rsp_ready;
-  // register interface
-  eth_idma_pkg::reg_req_t reg_req;
-  logic                   req_valid; // not sure
-  logic                   req_ready; // not sure
 
-  eth_idma_pkg::reg_rsp_t reg_rsp;
-  logic                   rsp_valid;  // not sure
-  logic                   rsp_ready; // not sure
-
-   // error handler
-  idma_pkg::idma_eh_req_t idma_eh_req;
-  logic                   eh_req_valid;
-  logic                   eh_req_ready;
 
   // AXI4+ATOP request and response
   eth_idma_pkg::axi_req_t axi_tx_read_req, axi_tx_write_req, axi_rx_read_req, axi_rx_write_req, axi_tx_req_mem, axi_rx_req_mem ;
@@ -159,32 +111,39 @@ module tb_eth_idma
     REG_BUS #(
       .DATA_WIDTH(REG_BUS_DW),
       .ADDR_WIDTH(REG_BUS_AW)
-    )  reg_bus_eth_mst (
+    )  reg_bus_eth_tx (
       .clk_i(s_clk)
     );
-
-
+    REG_BUS #(
+      .DATA_WIDTH(REG_BUS_DW),
+      .ADDR_WIDTH(REG_BUS_AW)
+    )  reg_bus_eth_rx (
+      .clk_i(s_clk)
+    );
+ 
   logic reg_error;
 
   typedef reg_test::reg_driver #(
      .AW(REG_BUS_AW),
      .DW(REG_BUS_DW),
-     .TT(TEST_TIME),
-     .TA(APPLY_TIME)
-  ) reg_bus_master_t;
+     .TT(SYS_TT),
+     .TA(SYS_TA)
+  ) reg_bus_drv_t;
 
 
-  reg_bus_master_t reg_eth_master  = new(reg_bus_eth_mst);
+  reg_bus_drv_t reg_eth_drv_tx  = new(reg_bus_eth_tx);
+  reg_bus_drv_t reg_eth_drv_rx  = new(reg_bus_eth_rx);
   
-  eth_idma_pkg::reg_req_t reg_bus_req;
-  eth_idma_pkg::reg_rsp_t reg_bus_rsp;
+  eth_idma_pkg::reg_req_t reg_bus_tx_req, reg_bus_rx_req;
+  eth_idma_pkg::reg_rsp_t reg_bus_tx_rsp, reg_bus_rx_rsp;
  
 
-  `REG_BUS_ASSIGN_TO_REQ(eg_eth_req, reg_bus_eth_mst)
-  `REG_BUS_ASSIGN_FROM_RSP(reg_bus_eth_mst, reg_eth_rsp)
+  `REG_BUS_ASSIGN_TO_REQ (reg_bus_tx_req, reg_bus_eth_tx)
+  `REG_BUS_ASSIGN_FROM_RSP (reg_bus_eth_tx, reg_bus_tx_rsp)
+  
+ `REG_BUS_ASSIGN_TO_REQ (reg_bus_rx_req, reg_bus_eth_rx)
+ `REG_BUS_ASSIGN_FROM_RSP (reg_bus_eth_rx, reg_bus_rx_rsp)
 
-
-   
     //--------------------------------------
     // TB Modules
     //--------------------------------------
@@ -238,9 +197,9 @@ module tb_eth_idma
    // ---------------------------- DUT -----------------------------
    eth_idma_wrap
     #(
-    .AxiDataWidth        ( DataWidth     ),    
-    .AxiAddrWidth        ( AddrWidth     ),
-    .AxiUserWidth        ( UserWidth     ),
+    .DataWidth        ( DataWidth     ),    
+    .AddrWidth        ( AddrWidth     ),
+    .UserWidth        ( UserWidth     ),
     .AxiIdWidth          ( AxiIdWidth     ),
     .NumAxInFlight       ( NumAxInFlight  ),
     .BufferDepth         ( BufferDepth     ),
@@ -275,21 +234,21 @@ module tb_eth_idma
     .phy_mdc          (                 ) ,
 
   /// Reg Configuration Interface
-    .reg_req_i        ( reg_bus_req      ) ,
-    .reg_rsp_o        ( reg_bus_rsp       ),
+    .reg_req_i        ( reg_bus_tx_req      ) ,
+    .reg_rsp_o        ( reg_bus_tx_rsp       ),
   /// iDMA 
      .idma_clk_i      ( s_clk           ) ,
      .rst_ni          ( s_rst_n         ) ,
      .testmode_i      (  1'b0           ),
 
       /// idma request
-     .idma_req_i      ( reg_bus_req     ) ,
-     .req_valid_i     ( reg_bus_req.valid           ) ,
+     .idma_req_i      ( reg_bus_tx_req     ) ,
+     .req_valid_i     ( tx_idma_req_valid  ) ,
      .req_ready_o     ( tx_idma_req_ready ),  
 
-     .idma_rsp_o      ( reg_bus_rsp     ) ,
-     .rsp_valid_o     ( reg_bus_rsp.ready ),
-     .rsp_ready_i     (tx_idma_rsp_ready          ) ,
+     .idma_rsp_o      ( reg_bus_tx_rsp     ) ,
+     .rsp_valid_o     ( tx_idma_rsp_valid ),
+     .rsp_ready_i     (tx_idma_rsp_ready  ) ,
 
      .idma_eh_req_i ( ), // error handling disabled now
      .eh_req_valid_i( ),
@@ -300,7 +259,7 @@ module tb_eth_idma
 
      .axi_write_req_o( axi_tx_wr_req_o),
      .axi_write_rsp_i( axi_tx_wr_rsp_i),
-    .idma_busy_o(busy )
+    .idma_busy_o     (busy )
 );
  
     //--------------------------------------
@@ -341,9 +300,9 @@ module tb_eth_idma
 
     eth_idma_wrap
     #(
-    .AxiDataWidth        ( DataWidth     ),    
-    .AxiAddrWidth        ( AddrWidth     ),
-    .AxiUserWidth        ( UserWidth     ),
+    .DataWidth        ( DataWidth     ),    
+    .AddrWidth        ( AddrWidth     ),
+    .UserWidth        ( UserWidth     ),
     .AxiIdWidth          ( AxiIdWidth     ),
     .NumAxInFlight       ( NumAxInFlight  ),
     .BufferDepth         ( BufferDepth     ),
@@ -372,25 +331,23 @@ module tb_eth_idma
 
   /// Ethernet MDIO
     .phy_mdio_i       ( 1'b0            ) ,
-    .phy_mdio_o       (                 ) ,
-    .phy_mdio_oe      (                 ) ,
-    .phy_mdc          (                 ) ,
+    .phy_mdio_o       (                 ) , // not used
+    .phy_mdio_oe      (                 ) , // not used
+    .phy_mdc          (                 ) , // not used
 
   /// Ethernet REGBUS Configuration Interface
-    .reg_req_i        ( rx_reg_eth_req       ) ,
-    .reg_rsp_o        ( rx_reg_eth_rsp       ),
+    .reg_req_i        ( reg_bus_rx_req      ) ,
+    .reg_rsp_o        ( reg_bus_rx_rsp       ),
   /// iDMA 
      .idma_clk_i      ( s_clk           ) ,
      .rst_ni          ( s_rst_n         ) ,
      .testmode_i      (  1'b0           ),
 
       /// idma request
-     .idma_req_i      ( rx_reg_idma_req      ) ,
-     .req_valid_i     ( rx_reg_idma_req.valid           ) ,
+     .req_valid_i     ( reg_bus_rx_req.valid        ) ,
      .req_ready_o     ( rx_idma_req_ready ),  
 
-     .idma_rsp_o      ( rx_reg_idma_rsp      ) ,
-     .rsp_valid_o     (rx_reg_idma_rsp.ready ),
+     .rsp_valid_o     (reg_bus_rx_rsp.ready ),
      .rsp_ready_i     ( rx_idma_rsp_ready            ) ,
 
      .idma_eh_req_i ( ), // error handling later
@@ -406,35 +363,30 @@ module tb_eth_idma
 );
 
   // Internal Clock generation
-
-
-   initial begin
-      while (!done) begin //SYSTEM CLOCK
-
    initial begin
       while (!done) begin
          s_clk_200MHz <= 1;
-         #(tCK200/2);
+         #(TCK200/2);
          s_clk_200MHz <= 0;
-         #(tCK200/2);
+         #(TCK200/2);
       end
    end
 
    initial begin
       while (!done) begin
          s_clk_125MHz_0 <= 1;
-         #(tCK125/2);
+         #(TCK125/2);
          s_clk_125MHz_0 <= 0;
-         #(tCK125/2);
+         #(TCK125/2);
       end
    end
 
    initial begin
       while (!done) begin
          s_clk_125MHz_90 <= 0;
-         #(tCK125/2);
+         #(TCK125/2);
          s_clk_125MHz_90 <= 1;
-           #(tCK125/2);
+           #(TCK125/2);
       end
    end
 
@@ -443,67 +395,64 @@ module tb_eth_idma
    initial begin
 
       // General reset
-      #tCK;
+      #SYS_TCK;
       s_rst_n <= 0;
       repeat(10) @(posedge s_clk);
       s_rst_n <= 1;
       #SYS_TCK;
-  reg_eth_master
-  reg_bus_master_t reg_eth_master_tx  = new(reg_bus_eth_mst_tx);
-  reg_bus_master_t reg_eth_master_rx  = new(reg_bus_eth_mst_rx);
-  reg_bus_master_t reg_idma_master_tx = new(reg_bus_idma_mst_tx);
-  reg_bus_master_t reg_idma_master_rx = new(reg_bus_idma_mst_rx);
+ 
+    /// tx path reg configs
     //set framing rx mac address to 48'h207098001032
-    reg_eth_master_tx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
-    // @(posedge s_clk);
-    reg_eth_master_tx.send_write( 'h4,  64'h00002070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
-    // @(posedge s_clk);
-
-    reg_eth_master_tx.send_write( 'h20, 64'h0, 'h0fff, reg_error ); // SRC_ADDR
-    // @(posedge s_clk);
-    
-    reg_eth_master_tx.send_write( 'h28, 64'h0000207098001032, 'h0fff, reg_error); // DST_ADDR
-    // @(posedge s_clk);
-
-    reg_eth_master_tx.send_write( 'h18, 64'h8,'h0f , reg_error); // Size in bytes
-    // @(posedge s_clk)
-    
-    reg_eth_master_tx.send_write( 'h18, 64'h8,'h0f , reg_error); // Size in bytes
-    // @(posedge s_clk)
-
-    reg_bus_master_t.send_write ( )
-    
-
-
-   // idma read test. src_addr = mac_addr
- initial
- begin
-    
-    reg_drv.send_write( 'h0, 64'h9800_1032, 'hff, reg_error); //lower 32bits of MAC address
+    reg_eth_drv_tx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
     @(posedge s_clk);
 
-    reg_drv.send_write( 'h4,  64'h0000_2070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
-    @(posedge s_clk);
-    
-    reg_drv.send_write( 'h10, 64'h0000_2070_9800_1032, 'h0fff, reg_error ); // SRC_ADDR
-    @(posedge s_clk);
-    
-    reg_drv.send_write( 'h14, 64'h0, 'h0fff, reg_error); // DST_ADDR
+    reg_eth_drv_tx.send_write( 'h4,  64'h00002070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge s_clk);
 
-    reg_drv.send_write( 'h18, 64'h8,'h0f , reg_error); // Size in bytes
+    reg_eth_drv_tx.send_write( 'h20, 64'h0, 'h0fff, reg_error ); // SRC_ADDR
+    @(posedge s_clk);
+    
+    reg_eth_drv_tx.send_write( 'h28, 64'h0000207098001032, 'h0fff, reg_error); // DST_ADDR
+    @(posedge s_clk);
+
+    reg_eth_drv_tx.send_write( 'h30, 64'h8,'h0f , reg_error); // Size in bytes
     @(posedge s_clk)
-   
-
-   
-   fix.write_axi(axi_master_wr_drv, 'h0, 64'h1032207098001032, 'hff); // addr as 0 in idma
-   @(posedge s_clk);
-   end
-   repeat(10) @(posedge s_clk);
     
-   fix.read_axi(axi_master_rd_drv, 'h0 );
-   // idma read test-  src_addr = mac_addr
-    $display("%d Dato corretto", rx_read_data);
+    reg_eth_drv_tx.send_write( 'h38, 64'h0,'h0f , reg_error); // src protocol
+    @(posedge s_clk)
+
+    reg_eth_drv_tx.send_write( 'h40, 64'h5,'h0f , reg_error); // dst protocol
+    @(posedge s_clk)
+
+    /// rx path reg configs
+    reg_eth_drv_rx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
+    @(posedge s_clk);
+    
+    reg_eth_drv_rx.send_write( 'h4,  64'h00002070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    @(posedge s_clk);
+
+    reg_eth_drv_rx.send_write( 'h20, 64'h0000207098001032, 'h0fff, reg_error ); // SRC_ADDR
+    @(posedge s_clk);
+    
+    reg_eth_drv_rx.send_write( 'h28, 64'h0, 'h0fff, reg_error); // DST_ADDR
+    @(posedge s_clk);
+
+    reg_eth_drv_rx.send_write( 'h30, 64'h8,'h0f , reg_error); // Size in bytes
+    @(posedge s_clk);
+    
+    reg_eth_drv_rx.send_write( 'h38, 64'h5,'h0f , reg_error); // src protocol
+    @(posedge s_clk);
+
+    reg_eth_drv_rx.send_write( 'h40, 64'h0,'h0f , reg_error); // dst protocol
+    @(posedge s_clk);
+    
+
+    //$readmemh("/usr/scratch2/fenga9/lbertaccini/carfield-pd-mr/l2_init_file.vmem", tb_carfield_chip.fix.i_dut.i_carfield_soc.i_reconfigurable_l2.i_l2_top.gen_bank_group_0__i_car_l2_bank_group.genblk1_1__i_ecc_sram_wrap.i_bank.gen_65536w_39dw_sram_bank_4096w_39dw_cut_0__i_cut.ip224uhdlp1p11rf_4096x39m4b2c1s1_t0r0p0d0a1m1h_bmod.ip224uhdlp1p11rf_4096x39m4b2c1s1_t0r0p0d0a1m1h_array.DATA_ARRAY);
+
+   /// launch transfer?
+   /// wait for completion?
+   // add preload memory
 
  end
+
 endmodule
