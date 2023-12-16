@@ -5,13 +5,14 @@
 
 module framing_top #(
   /// AXI Stream in request struct
-  parameter type axi_stream_req_t = logic,
+  parameter type axi_stream_req_t  = logic,
   /// AXI Stream in response struct
-  parameter type axi_stream_rsp_t = logic,
-  /// REGBUS
-  parameter type reg_req_t = logic,
-  parameter type reg_rsp_t = logic,
-  parameter int AW_REGBUS = 4
+  parameter type axi_stream_rsp_t  = logic,
+  /// reg intf
+  parameter type reg2hw_itf_t      = logic,
+  parameter type hw2reg_itf_t      = logic,
+  /// regbus address width
+  parameter int AW_REGBUS          = 4
 ) (
   // Internal 125 MHz clock
   input  wire                                           clk_i        ,
@@ -30,22 +31,20 @@ module framing_top #(
   input  wire                                           phy_pme_n    ,
   // MDIO
   input  wire                                           phy_mdio_i   ,
-  output      reg                                       phy_mdio_o   ,
-  output      reg                                       phy_mdio_oe  ,
+  output reg                                            phy_mdio_o   ,
+  output reg                                            phy_mdio_oe  ,
   output wire                                           phy_mdc      ,
   // AXIS TX/RX
-  input       axi_stream_req_t                          tx_axis_req_i,
-  output      axi_stream_rsp_t                          tx_axis_rsp_o,
-  output      axi_stream_req_t                          rx_axis_req_o,
-  input       axi_stream_rsp_t                          rx_axis_rsp_i,
-  // configuration (register interface)
-  input       reg_req_t                                 reg_req_i    ,
-  output      reg_rsp_t                                 reg_rsp_o
+  input  axi_stream_req_t                               tx_axis_req_i,
+  output axi_stream_rsp_t                               tx_axis_rsp_o,
+  output axi_stream_req_t                               rx_axis_req_o,
+  input  axi_stream_rsp_t                               rx_axis_rsp_i,
+  // reg configs
+  input  reg2hw_itf_t                                   reg2hw_i,
+  input  hw2reg_itf_t                                   hw2reg_i    
 );
 
   import eth_idma_reg_pkg::* ;
-  eth_idma_reg_pkg::eth_idma_reg2hw_t reg2hw; // Write
-  eth_idma_reg_pkg::eth_idma_hw2reg_t hw2reg; // Read
 
   logic        mac_gmii_tx_en;
   logic        accept_frame_q, accept_frame_d;
@@ -167,20 +166,6 @@ module framing_top #(
       accept_frame_q <= accept_frame_d;
     end
   end
-
-  eth_idma_reg_top #(
-    .reg_req_t(reg_req_t),
-    .reg_rsp_t(reg_rsp_t),
-    .AW(AW_REGBUS)
-  ) i_regs (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .reg_req_i(reg_req_i),
-    .reg_rsp_o(reg_rsp_o),
-    .reg2hw(reg2hw), // Write
-    .hw2reg(hw2reg), // Read
-    .devmode_i(1'b1)
-  );
 
   rgmii_soc rgmii_soc1 (
     .rst_int       (~rst_ni             ),
