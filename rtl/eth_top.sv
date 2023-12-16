@@ -24,8 +24,8 @@ module eth_top #(
   /// AXI Stream User Width
   parameter int unsigned UserWidth = 1,
   /// REGBUS
-  parameter type reg_req_t = eth_top_pkg::reg_bus_req_t,
-  parameter type reg_rsp_t = eth_top_pkg::reg_bus_rsp_t,
+  parameter type reg2hw_itf_t = eth_idma_reg_pkg::eth_idma_reg2hw_t,
+  parameter type hw2reg_itf_t = eth_idma_reg_pkg::eth_idma_hw2reg_t,
   parameter int AW_REGBUS = 4
 ) (
   // Internal 125 MHz clock
@@ -49,13 +49,13 @@ module eth_top #(
   output reg                                            phy_mdio_oe  ,
   output wire                                           phy_mdc      ,
   // AXIS TX/RX
-  input       axi_stream_req_t                          tx_axis_req_i,
-  output      axi_stream_rsp_t                          tx_axis_rsp_o,
-  output      axi_stream_req_t                          rx_axis_req_o,
-  input       axi_stream_rsp_t                          rx_axis_rsp_i,
-  // configuration (register interface)
-  input       reg_req_t                                 reg_req_i    ,
-  output      reg_rsp_t                                 reg_rsp_o
+  input  axi_stream_req_t                               tx_axis_req_i,
+  output axi_stream_rsp_t                               tx_axis_rsp_o,
+  output axi_stream_req_t                               rx_axis_req_o,
+  input  axi_stream_rsp_t                               rx_axis_rsp_i,
+  // Reg configs
+  input  hw2reg_itf_t                                   hw2reg_i     ,
+  input  reg2hw_itf_t                                   reg2hw_i
 );
 
 // ---------------- axis streams for the framing module ----------------------
@@ -81,11 +81,11 @@ module eth_top #(
 // ---------------- END: axis streams for the framing module ----------------------
 
   framing_top #(
-    .axi_stream_req_t(s_framing_req_t),
-    .axi_stream_rsp_t(s_framing_rsp_t),
-    .reg_req_t       (reg_req_t),
-    .reg_rsp_t       (reg_rsp_t),
-    .AW_REGBUS       (AW_REGBUS)
+    .axi_stream_req_t  ( s_framing_req_t ),
+    .axi_stream_rsp_t  ( s_framing_rsp_t ),
+    .reg2hw_itf_t      ( reg2hw_itf_t    ),
+    .rhw2reg_itf_t     ( hw2reg_itf_t    ),
+    .AW_REGBUS         ( AW_REGBUS       )
   ) i_framing_top (
     .rst_ni(rst_ni),
     .clk_i(clk_i),
@@ -115,9 +115,9 @@ module eth_top #(
     .rx_axis_req_o(s_framing_rx_req),
     .rx_axis_rsp_i(s_framing_rx_rsp),
 
-    // REGBUS Configuration Interface
-    .reg_req_i(reg_req_i),
-    .reg_rsp_o(reg_rsp_o)
+    // Reg Interface
+    .reg2hw_i(reg2hw_i),
+    .hw2reg_i(hw2reg_i)
   );
 
   axi_stream_dw_downsizer #(
