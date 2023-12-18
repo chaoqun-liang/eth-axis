@@ -1,19 +1,17 @@
 // Copyright 2022 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
+//
+// Chaoqun Liang  <chaoqun.liang@unibo.it>
 
 `timescale 1 ns/1 ns
-
-// axi + regbus
-`include "axi/assign.svh"
 `include "axi/typedef.svh"
 `include "idma/typedef.svh"
 `include "register_interface/typedef.svh"
 `include "register_interface/assign.svh"
 
 module eth_idma_tb
-  import idma_pkg::*;
-  import eth_idma_pkg::*; #(
+ #(
   parameter int unsigned DataWidth           = 64,
   parameter int unsigned AddrWidth           = 64,
   parameter int unsigned UserWidth           = 1,
@@ -28,18 +26,21 @@ module eth_idma_tb
   parameter bit          RejectZeroTransfers = 1,
   parameter bit          ErrorHandling       = 0
 );
+  
+   import idma_pkg::*;
+  // import eth_idma_pkg::*;
 
   // timing parameters
-  localparam time SYS_TCK    = 1ns;
+  localparam time SYS_TCK    = 8ns;
   localparam time TCK200     = 5ns;
   localparam time TCK125     = 8ns;
   localparam time SYS_TA     = 2ns;
   localparam time SYS_TT     = 6ns;
   
+  // TB parameters
   // dependent parameters
   localparam int unsigned StrbWidth       = DataWidth / 8;
   localparam int unsigned OffsetWidth     = $clog2(StrbWidth);
-  
   // regbus
   localparam int unsigned REG_BUS_DW = 64;
   localparam int unsigned REG_BUS_AW = 8;
@@ -68,6 +69,7 @@ module eth_idma_tb
 `AXI_TYPEDEF_REQ_T(axi_req_t, axi_aw_chan_t, axi_w_chan_t, axi_ar_chan_t)
 `AXI_TYPEDEF_RESP_T(axi_rsp_t, axi_b_chan_t, axi_r_chan_t)
 
+    
 
    //--------------------------------------
     // Physical Signals to the DUT
@@ -79,7 +81,7 @@ module eth_idma_tb
   logic       s_clk_125MHz_90;
   logic       s_clk_200MHz;
   logic       s_rst_n;
-  logic        done            = 0;
+  logic       done       = 0;
 
   logic       eth_rxck;
   logic       eth_rxctl;
@@ -87,15 +89,18 @@ module eth_idma_tb
   logic       eth_txck;
   logic       eth_txctl;
   logic [3:0] eth_txd;
-  logic       eth_rst_n;
+  logic       eth_tx_rstn, eth_rx_rstn;
 
-  logic tx_idma_req_ready , tx_idma_rsp_ready;
-  logic rx_idma_req_ready , rx_idma_rsp_ready;
+  logic tx_idma_req_valid, tx_idma_req_ready, tx_idma_rsp_valid, tx_idma_rsp_ready;
+  logic rx_idma_req_valid, rx_idma_req_ready, rx_idma_rsp_valid, rx_idma_rsp_ready;
 
 
   // AXI4+ATOP request and response
-  eth_idma_pkg::axi_req_t axi_tx_read_req, axi_tx_write_req, axi_rx_read_req, axi_rx_write_req, axi_tx_req_mem, axi_rx_req_mem ;
-  eth_idma_pkg::axi_rsp_t axi_tx_read_rsp, axi_tx_write_rsp, axi_rx_read_rsp, axi_rx_write_rsp, axi_tx_rsp_mem, axi_rx_rsp_mem ;
+  axi_req_t axi_tx_read_req, axi_tx_write_req, axi_rx_read_req, axi_rx_write_req ;
+  axi_rsp_t axi_tx_read_rsp, axi_tx_write_rsp, axi_rx_read_rsp, axi_rx_write_rsp ;
+
+  axi_req_t axi_tx_req_mem, axi_rx_req_mem;
+  axi_rsp_t axi_tx_rsp_mem, axi_rx_rsp_mem;
 
   // error handler
   idma_pkg::idma_eh_req_t idma_eh_req;
@@ -103,46 +108,47 @@ module eth_idma_tb
   logic                   eh_req_ready;
 
   // busy signal
-  idma_busy_t             busy;
+  idma_busy_t             tx_busy, rx_busy;
   
   
     // -------------------- REG Drivers -----------------------
+   
+    typedef reg_test::reg_driver #(
+     .AW(REG_BUS_AW),
+     .DW(REG_BUS_DW),
+     .TT(SYS_TT),
+     .TA(SYS_TA)
+    ) reg_bus_drv_t;
 
     REG_BUS #(
       .DATA_WIDTH(REG_BUS_DW),
       .ADDR_WIDTH(REG_BUS_AW)
-    )  reg_bus_eth_tx (
+    )  reg_bus_tx (
       .clk_i(s_clk)
     );
+
     REG_BUS #(
       .DATA_WIDTH(REG_BUS_DW),
       .ADDR_WIDTH(REG_BUS_AW)
-    )  reg_bus_eth_rx (
+    )  reg_bus_rx (
       .clk_i(s_clk)
     );
  
   logic reg_error;
 
-  typedef reg_test::reg_driver #(
-     .AW(REG_BUS_AW),
-     .DW(REG_BUS_DW),
-     .TT(SYS_TT),
-     .TA(SYS_TA)
-  ) reg_bus_drv_t;
-
-
-  reg_bus_drv_t reg_eth_drv_tx  = new(reg_bus_eth_tx);
-  reg_bus_drv_t reg_eth_drv_rx  = new(reg_bus_eth_rx);
+   // one driver for each bus
+  reg_bus_drv_t reg_drv_tx  = new(reg_bus_tx);
+  reg_bus_drv_t reg_drv_rx  = new(reg_bus_rx);
   
   eth_idma_pkg::reg_req_t reg_bus_tx_req, reg_bus_rx_req;
   eth_idma_pkg::reg_rsp_t reg_bus_tx_rsp, reg_bus_rx_rsp;
  
-
-  `REG_BUS_ASSIGN_TO_REQ (reg_bus_tx_req, reg_bus_eth_tx)
-  `REG_BUS_ASSIGN_FROM_RSP (reg_bus_eth_tx, reg_bus_tx_rsp)
   
- `REG_BUS_ASSIGN_TO_REQ (reg_bus_rx_req, reg_bus_eth_rx)
- `REG_BUS_ASSIGN_FROM_RSP (reg_bus_eth_rx, reg_bus_rx_rsp)
+  `REG_BUS_ASSIGN_TO_REQ (reg_bus_tx_req, reg_bus_tx)
+  `REG_BUS_ASSIGN_FROM_RSP (reg_bus_tx, reg_bus_tx_rsp)
+  
+ `REG_BUS_ASSIGN_TO_REQ (reg_bus_rx_req, reg_bus_rx)
+ `REG_BUS_ASSIGN_FROM_RSP (reg_bus_rx, reg_bus_rx_rsp)
 
     //--------------------------------------
     // TB Modules
@@ -155,7 +161,8 @@ module eth_idma_tb
         .clk_o        ( s_clk     ),
         .rst_no       ( s_rst_n   )
     );
-     // AXI4+ATOP sim memory
+
+     // AXI4 TX sim memory
     axi_sim_mem #(
         .AddrWidth         ( AddrWidth    ),
         .DataWidth         ( DataWidth    ),
@@ -171,10 +178,24 @@ module eth_idma_tb
         .clk_i              ( s_clk           ),
         .rst_ni             ( s_rst_n         ),
         .axi_req_i          ( axi_tx_req_mem  ),
-        .axi_rsp_o          ( axi_tx_rsp_mem  )
+        .axi_rsp_o          ( axi_tx_rsp_mem  ),
+        .mon_r_last_o       ( /* NOT CONNECTED */ ),
+        .mon_r_beat_count_o ( /* NOT CONNECTED */ ),
+        .mon_r_user_o       ( /* NOT CONNECTED */ ),
+        .mon_r_id_o         ( /* NOT CONNECTED */ ),
+        .mon_r_data_o       ( /* NOT CONNECTED */ ),
+        .mon_r_addr_o       ( /* NOT CONNECTED */ ),
+        .mon_r_valid_o      ( /* NOT CONNECTED */ ),
+        .mon_w_last_o       ( /* NOT CONNECTED */ ),
+        .mon_w_beat_count_o ( /* NOT CONNECTED */ ),
+        .mon_w_user_o       ( /* NOT CONNECTED */ ),
+        .mon_w_id_o         ( /* NOT CONNECTED */ ),
+        .mon_w_data_o       ( /* NOT CONNECTED */ ),
+        .mon_w_addr_o       ( /* NOT CONNECTED */ ),
+        .mon_w_valid_o      ( /* NOT CONNECTED */ )
     );
 
-     // AXI4+ATOP sim memory
+     // AXI4 RX sim memory
     axi_sim_mem #(
         .AddrWidth         ( AddrWidth    ),
         .DataWidth         ( DataWidth    ),
@@ -190,76 +211,75 @@ module eth_idma_tb
         .clk_i              ( s_clk             ),
         .rst_ni             ( s_rst_n           ),
         .axi_req_i          ( axi_rx_req_mem    ),
-        .axi_rsp_o          ( axi_rx_rsp_mem    )
+        .axi_rsp_o          ( axi_rx_rsp_mem    ),
+        .mon_r_last_o       ( /* NOT CONNECTED */ ),
+        .mon_r_beat_count_o ( /* NOT CONNECTED */ ),
+        .mon_r_user_o       ( /* NOT CONNECTED */ ),
+        .mon_r_id_o         ( /* NOT CONNECTED */ ),
+        .mon_r_data_o       ( /* NOT CONNECTED */ ),
+        .mon_r_addr_o       ( /* NOT CONNECTED */ ),
+        .mon_r_valid_o      ( /* NOT CONNECTED */ ),
+        .mon_w_last_o       ( /* NOT CONNECTED */ ),
+        .mon_w_beat_count_o ( /* NOT CONNECTED */ ),
+        .mon_w_user_o       ( /* NOT CONNECTED */ ),
+        .mon_w_id_o         ( /* NOT CONNECTED */ ),
+        .mon_w_data_o       ( /* NOT CONNECTED */ ),
+        .mon_w_addr_o       ( /* NOT CONNECTED */ ),
+        .mon_w_valid_o      ( /* NOT CONNECTED */ )
     );
+    
   
-
    // ---------------------------- DUT -----------------------------
-   eth_idma_wrap
-    #(
-    .DataWidth        ( DataWidth     ),    
-    .AddrWidth        ( AddrWidth     ),
-    .UserWidth        ( UserWidth     ),
-    .AxiIdWidth          ( AxiIdWidth     ),
-    .NumAxInFlight       ( NumAxInFlight  ),
-    .BufferDepth         ( BufferDepth     ),
-    .TFLenWidth          ( TFLenWidth        ),
-    /// The depth of the memory system the backend is attached to
-    .MemSysDepth         ( MemSysDepth       ),
-    .RAWCouplingAvail    ( RAWCouplingAvail  ),
-    .HardwareLegalizer   ( HardwareLegalizer  ),
-    .RejectZeroTransfers ( RejectZeroTransfers  )
-   )i_tx_eth_idma_wrap (
+   eth_idma_wrap#(
+        .DataWidth           ( DataWidth           ),    
+        .AddrWidth           ( AddrWidth           ),
+        .UserWidth           ( UserWidth           ),
+        .AxiIdWidth          ( AxiIdWidth          ),
+        .NumAxInFlight       ( NumAxInFlight       ),
+        .BufferDepth         ( BufferDepth         ),
+        .TFLenWidth          ( TFLenWidth          ),
+        /// The depth of the memory system the backend is attached to
+        .MemSysDepth         ( MemSysDepth         ),
+        .RAWCouplingAvail    ( RAWCouplingAvail    ),
+        .HardwareLegalizer   ( HardwareLegalizer   ),
+        .RejectZeroTransfers ( RejectZeroTransfers )
+    ) i_tx_eth_idma_wrap (
+        .clk_i               (  s_clk              ),
+        .rst_ni              (  s_rst_n            ),
+         /// Etherent Internal clocks
+        .eth_clk_i           ( s_clk_125MHz_0      ), // 125MHz in-phase
+        .eth_clk90_i         ( s_clk_125MHz_90     ), // 125 MHz with 90 phase shift
+        .eth_clk200M_i       ( s_clk_200MHz        ), // 200 MHz
+      
+        .phy_rx_clk_i        ( eth_rxck            )  ,
+        .phy_rxd_i           ( eth_rxd             )  ,
+        .phy_rx_ctl_i        ( eth_rxctl           )  ,
+        .phy_tx_clk_o        ( eth_txck        )  ,
+        .phy_txd_o           ( eth_txd         )  ,
+        .phy_tx_ctl_o        ( eth_txctl       )  ,
+        .phy_resetn_o        (  eth_tx_rstn       )  ,  // output
+        .phy_intn_i          ( 1'b1            )  ,
+        .phy_pme_i           ( 1'b1            )  ,
+        .phy_mdio_i          ( 1'b0            ) ,
+        .phy_mdio_o          (                 ) ,
+        .phy_mdio_oe         (                 ) ,
+        .phy_mdc             (                 ) ,
+        .reg_req_i           ( reg_bus_tx_req      ) ,
+        .reg_rsp_o           ( reg_bus_tx_rsp       ),
+        .testmode_i        (  1'b0           ),
+        .idma_req_valid_i    (  tx_idma_req_valid  ) ,
+        .idma_req_ready_o     ( tx_idma_req_ready ),  
+        .idma_rsp_valid_o     ( tx_idma_rsp_valid ),
+        .idma_rsp_ready_i     (tx_idma_rsp_ready  ) ,
+        .idma_eh_req_i        (idma_eh_req ), // error handling disabled now
+        .eh_req_valid_i       (eh_req_valid ),
+        .eh_req_ready_o      (eh_req_ready ),
+        .axi_read_req_o     ( axi_tx_read_req),
+        .axi_read_rsp_i     ( axi_tx_read_rsp),
 
-  /// Etherent Internal clocks
-    .eth_clk_i        ( s_clk_125MHz_0  )  , // 125MHz in-phase
-    .eth_clk90_i      ( s_clk_125MHz_90 )  , // 125 MHz with 90 phase shift
-    .eth_clk200M_i    ( s_clk_200MHz    )  , // 200 MHz
-    .eth_rst_ni       ( s_rst_n         )  , // active low
-
-    .phy_rx_clk       ( eth_rxck        )  ,
-    .phy_rxd          ( eth_rxd         )  ,
-    .phy_rx_ctl       ( eth_rxctl       )  ,
-    .phy_tx_clk       ( eth_txck        )  ,
-    .phy_txd          ( eth_txd         )  ,
-    .phy_tx_ctl       ( eth_txctl       )  ,
-    .phy_reset_n      ( eth_rst_n       )  ,  // output
-    .phy_int_n        ( 1'b1            )  ,
-    .phy_pme_n        ( 1'b1            )  ,
-
-  /// Ethernet MDIO
-    .phy_mdio_i       ( 1'b0            ) ,
-    .phy_mdio_o       (                 ) ,
-    .phy_mdio_oe      (                 ) ,
-    .phy_mdc          (                 ) ,
-
-  /// Reg Configuration Interface
-    .reg_req_i        ( reg_bus_tx_req      ) ,
-    .reg_rsp_o        ( reg_bus_tx_rsp       ),
-  /// iDMA 
-     .idma_clk_i      ( s_clk           ) ,
-     .rst_ni          ( s_rst_n         ) ,
-     .testmode_i      (  1'b0           ),
-
-      /// idma request
-     .idma_req_i      ( reg_bus_tx_req     ) ,
-     .req_valid_i     ( tx_idma_req_valid  ) ,
-     .req_ready_o     ( tx_idma_req_ready ),  
-
-     .idma_rsp_o      ( reg_bus_tx_rsp     ) ,
-     .rsp_valid_o     ( tx_idma_rsp_valid ),
-     .rsp_ready_i     (tx_idma_rsp_ready  ) ,
-
-     .idma_eh_req_i ( ), // error handling disabled now
-     .eh_req_valid_i( ),
-     .eh_req_ready_o( ),
-
-     .axi_read_req_o( axi_tx_rd_req_o),
-     .axi_read_rsp_i( axi_tx_rd_rsp_i),
-
-     .axi_write_req_o( axi_tx_wr_req_o),
-     .axi_write_rsp_i( axi_tx_wr_rsp_i),
-    .idma_busy_o     (busy )
+        .axi_write_req_o    ( axi_tx_write_req),
+        .axi_write_rsp_i   ( axi_tx_write_rsp),
+        .idma_busy_o       (tx_busy )
 );
  
     //--------------------------------------
@@ -291,8 +311,8 @@ module eth_idma_tb
         .slv_read_resp_o  ( axi_rx_read_rsp   ),
         .slv_write_req_i  ( axi_rx_write_req  ),
         .slv_write_resp_o ( axi_rx_write_rsp  ),
-        .mst_req_o        ( axi_tx_req_mem     ),
-        .mst_resp_i       ( axi_tx_rsp_mem     )
+        .mst_req_o        ( axi_rx_req_mem     ),
+        .mst_resp_i       ( axi_rx_rsp_mem     )
     );
     
  eth_idma_pkg::reg_req_t rx_reg_idma_req, tx_reg_idma_req;
@@ -312,54 +332,51 @@ module eth_idma_tb
     .HardwareLegalizer   ( HardwareLegalizer  ),
     .RejectZeroTransfers ( RejectZeroTransfers  )
    )i_rx_eth_idma_wrap (
-
+    .clk_i            ( s_clk           ) ,
+    .rst_ni           ( s_rst_n         ) ,
   /// Etherent Internal clocks
     .eth_clk_i        ( s_clk_125MHz_0  )  , // 125MHz in-phase
     .eth_clk90_i      ( s_clk_125MHz_90 )  , // 125 MHz with 90 phase shift
     .eth_clk200M_i    ( s_clk_200MHz    )  , // 200 MHz
-    .eth_rst_ni       ( s_rst_n         )  , // active low
 
-    .phy_rx_clk       ( eth_rxck        )  ,
-    .phy_rxd          ( eth_rxd         )  ,
-    .phy_rx_ctl       ( eth_rxctl       )  ,
-    .phy_tx_clk       ( eth_txck        )  ,
-    .phy_txd          ( eth_txd         )  ,
-    .phy_tx_ctl       ( eth_txctl       )  ,
-    .phy_reset_n      ( eth_rst_n       )  ,  // output
-    .phy_int_n        ( 1'b1            )  ,
-    .phy_pme_n        ( 1'b1            )  ,
+    .phy_rx_clk_i       ( eth_txck        )  ,
+    .phy_rxd_i          ( eth_txd         )  ,
+    .phy_rx_ctl_i       ( eth_txctl       )  ,
+    .phy_tx_clk_o       ( eth_rxck        )  ,
+    .phy_txd_o          ( eth_rxd         )  ,
+    .phy_tx_ctl_o       ( eth_rxctl       )  ,
+    .phy_resetn_o       ( eth_rx_rstn       )  ,  // output
+    .phy_intn_i         ( 1'b1            )  ,
+    .phy_pme_i          ( 1'b1         )  ,
 
-  /// Ethernet MDIO
+     /// Ethernet MDIO
     .phy_mdio_i       ( 1'b0            ) ,
     .phy_mdio_o       (                 ) , // not used
     .phy_mdio_oe      (                 ) , // not used
     .phy_mdc          (                 ) , // not used
 
-  /// Ethernet REGBUS Configuration Interface
-    .reg_req_i        ( reg_bus_rx_req      ) ,
-    .reg_rsp_o        ( reg_bus_rx_rsp       ),
-  /// iDMA 
-     .idma_clk_i      ( s_clk           ) ,
-     .rst_ni          ( s_rst_n         ) ,
+    .reg_req_i        ( reg_bus_rx_req    ) ,
+    .reg_rsp_o        ( reg_bus_rx_rsp   ),
+     /// iDMA 
      .testmode_i      (  1'b0           ),
 
       /// idma request
-     .req_valid_i     ( reg_bus_rx_req.valid        ) ,
-     .req_ready_o     ( rx_idma_req_ready ),  
+     .idma_req_valid_i    ( rx_idma_req_valid  ) ,
+     .idma_req_ready_o     ( rx_idma_req_ready ),  
 
-     .rsp_valid_o     (reg_bus_rx_rsp.ready ),
-     .rsp_ready_i     ( rx_idma_rsp_ready            ) ,
+     .idma_rsp_valid_o     ( rx_idma_rsp_valid ),
+     .idma_rsp_ready_i     (rx_idma_rsp_ready  ) ,
 
      .idma_eh_req_i ( ), // error handling later
      .eh_req_valid_i( ),
      .eh_req_ready_o( ),
 
-     .axi_read_req_o( axi_rx_rd_req_o),
-     .axi_read_rsp_i( axi_rx_rd_rsp_i),
+     .axi_read_req_o( axi_rx_read_req),
+     .axi_read_rsp_i( axi_rx_read_rsp),
 
-     .axi_write_req_o( axi_rx_wr_req_o),
-     .axi_write_rsp_i( axi_rx_wr_rsp_i),
-    .idma_busy_o(busy)
+     .axi_write_req_o( axi_rx_write_req),
+     .axi_write_rsp_i( axi_rx_write_rsp),
+    .idma_busy_o(rx_busy)
 );
 
   // Internal Clock generation
@@ -393,65 +410,87 @@ module eth_idma_tb
    // ------------------------ BEGINNING OF SIMULATION ------------------------
 
    initial begin
+      
+      @(posedge s_rst_n);
+      @(posedge s_clk);
+      tx_idma_req_valid = 0;
+      rx_idma_req_valid = 0;
+      tx_idma_rsp_ready = 0;
+      rx_idma_rsp_ready = 0;
+   
+    $readmemh("/scratch/chaol/eth-ETH/fe-ethernet/rtl/idma_preload_values.vmem", i_tx_axi_sim_mem.mem);
 
-      // General reset
-      #SYS_TCK;
-      s_rst_n <= 0;
-      repeat(10) @(posedge s_clk);
-      s_rst_n <= 1;
-      #SYS_TCK;
  
     /// tx path reg configs
-    //set framing rx mac address to 48'h207098001032
-    reg_eth_drv_tx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
+    
+   //set framing rx mac address to 48'h207098001032
+    reg_drv_tx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
     @(posedge s_clk);
 
-    reg_eth_drv_tx.send_write( 'h4,  64'h00002070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_tx.send_write( 'h4,  64'h00002070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge s_clk);
 
-    reg_eth_drv_tx.send_write( 'h20, 64'h0, 'h0fff, reg_error ); // SRC_ADDR
+    reg_drv_tx.send_write( 'h20, 64'h0, 'h0fff, reg_error ); // SRC_ADDR
     @(posedge s_clk);
     
-    reg_eth_drv_tx.send_write( 'h28, 64'h0000207098001032, 'h0fff, reg_error); // DST_ADDR
+    reg_drv_tx.send_write( 'h28, 64'h0000207098001032, 'h0fff, reg_error); // DST_ADDR
     @(posedge s_clk);
 
-    reg_eth_drv_tx.send_write( 'h30, 64'h8,'h0f , reg_error); // Size in bytes
+    reg_drv_tx.send_write( 'h30, 64'h8,'h0f , reg_error); // Size in bytes
     @(posedge s_clk)
     
-    reg_eth_drv_tx.send_write( 'h38, 64'h0,'h0f , reg_error); // src protocol
+    reg_drv_tx.send_write( 'h38, 64'h0,'h0f , reg_error); // src protocol
     @(posedge s_clk)
 
-    reg_eth_drv_tx.send_write( 'h40, 64'h5,'h0f , reg_error); // dst protocol
+    reg_drv_tx.send_write( 'h40, 64'h5,'h0f , reg_error); // dst protocol
     @(posedge s_clk)
+         
+     tx_idma_req_valid = 1;  // a valid reuqest is available
 
+     // wait for req_ready to become 1, indicate the dma module is ready to accept the request. 
+     /// wait till transfer request is accpeted (valid to 0 after the transaction complete)
+     while (tx_idma_req_ready != 1) begin
+    @(posedge s_clk); // wait for req_ready to become 1, indicating the DMA module is ready to accept the request.
+    end
+    
+     tx_idma_rsp_ready = 1; // launch the transfer 
     /// rx path reg configs
-    reg_eth_drv_rx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
+    rx_idma_req_valid = 1;
+    reg_drv_rx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
     @(posedge s_clk);
     
-    reg_eth_drv_rx.send_write( 'h4,  64'h00002070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
+    reg_drv_rx.send_write( 'h4,  64'h00002070, 'h0f, reg_error); //upper 16bits of MAC address + other configuration set to false/0
     @(posedge s_clk);
 
-    reg_eth_drv_rx.send_write( 'h20, 64'h0000207098001032, 'h0fff, reg_error ); // SRC_ADDR
+    reg_drv_rx.send_write( 'h20, 64'h0000207098001032, 'h0fff, reg_error ); // SRC_ADDR
     @(posedge s_clk);
     
-    reg_eth_drv_rx.send_write( 'h28, 64'h0, 'h0fff, reg_error); // DST_ADDR
+    reg_drv_rx.send_write( 'h28, 64'h0, 'h0fff, reg_error); // DST_ADDR
     @(posedge s_clk);
 
-    reg_eth_drv_rx.send_write( 'h30, 64'h8,'h0f , reg_error); // Size in bytes
-    @(posedge s_clk);
-    
-    reg_eth_drv_rx.send_write( 'h38, 64'h5,'h0f , reg_error); // src protocol
-    @(posedge s_clk);
-
-    reg_eth_drv_rx.send_write( 'h40, 64'h0,'h0f , reg_error); // dst protocol
+    reg_drv_rx.send_write( 'h30, 64'h8,'h0f , reg_error); // Size in bytes
     @(posedge s_clk);
     
+    reg_drv_rx.send_write( 'h38, 64'h5,'h0f , reg_error); // src protocol
+    @(posedge s_clk);
 
-    //$readmemh("/usr/scratch2/fenga9/lbertaccini/carfield-pd-mr/l2_init_file.vmem", tb_carfield_chip.fix.i_dut.i_carfield_soc.i_reconfigurable_l2.i_l2_top.gen_bank_group_0__i_car_l2_bank_group.genblk1_1__i_ecc_sram_wrap.i_bank.gen_65536w_39dw_sram_bank_4096w_39dw_cut_0__i_cut.ip224uhdlp1p11rf_4096x39m4b2c1s1_t0r0p0d0a1m1h_bmod.ip224uhdlp1p11rf_4096x39m4b2c1s1_t0r0p0d0a1m1h_array.DATA_ARRAY);
+    reg_drv_rx.send_write( 'h40, 64'h0,'h0f , reg_error); // dst protocol
+    @(posedge s_clk);
+    
+    rx_idma_req_valid = 1; // a valid reuqest is available
+     
+     while (rx_idma_req_ready != 1) begin
+    @(posedge s_clk); // wait for req_ready to become 1, indicating the DMA module is ready to accept the request.
+    end
 
-   /// launch transfer?
-   /// wait for completion?
-   // add preload memory
+    rx_idma_rsp_ready = 1; // cannot reach
+
+
+    //wait for rsp valid to be asserted to see the response
+    //rsp_ready to be 0 done
+
+
+    $finish;
 
  end
 
