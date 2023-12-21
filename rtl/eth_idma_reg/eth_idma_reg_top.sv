@@ -544,7 +544,7 @@ module eth_idma_reg_top #(
   prim_subreg #(
     .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+    .RESVAL  (2'h1)
   ) u_opt_src_burst (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -702,7 +702,7 @@ module eth_idma_reg_top #(
   prim_subreg #(
     .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+    .RESVAL  (2'h1)
   ) u_opt_dst_burst (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),

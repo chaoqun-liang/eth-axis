@@ -9,15 +9,14 @@ extern "C" {
 // Register width
 #define ETH_IDMA_PARAM_REG_WIDTH 64
 
-// Configures the lower 4 bytes of the devices MAC address
+// lower 4 bytes of the devices MAC address
 #define ETH_IDMA_MACLO_ADDR_REG_OFFSET 0x0
 #define ETH_IDMA_MACLO_ADDR_LOWER_MAC_ADDRESS_MASK 0xffffffff
 #define ETH_IDMA_MACLO_ADDR_LOWER_MAC_ADDRESS_OFFSET 0
 #define ETH_IDMA_MACLO_ADDR_LOWER_MAC_ADDRESS_FIELD \
   ((bitfield_field32_t) { .mask = ETH_IDMA_MACLO_ADDR_LOWER_MAC_ADDRESS_MASK, .index = ETH_IDMA_MACLO_ADDR_LOWER_MAC_ADDRESS_OFFSET })
 
-// Configures the: upper 2 bytes of the devices MAC address, promiscuous
-// flag, MDIO interface
+// upper 2 bytes of the devices MAC address, promiscuous flag, MDIO interface
 #define ETH_IDMA_MACHI_MDIO_REG_OFFSET 0x8
 #define ETH_IDMA_MACHI_MDIO_UPPER_MAC_ADDRESS_MASK 0xffff
 #define ETH_IDMA_MACHI_MDIO_UPPER_MAC_ADDRESS_OFFSET 0
@@ -57,21 +56,96 @@ extern "C" {
   ((bitfield_field32_t) { .mask = ETH_IDMA_DST_ADDR_DST_ADDR_MASK, .index = ETH_IDMA_DST_ADDR_DST_ADDR_OFFSET })
 
 // Number of bytes
-#define ETH_IDMA_NUM_BYTES_REG_OFFSET 0x30
-#define ETH_IDMA_NUM_BYTES_NUM_BYTES_MASK 0xffffffff
-#define ETH_IDMA_NUM_BYTES_NUM_BYTES_OFFSET 0
-#define ETH_IDMA_NUM_BYTES_NUM_BYTES_FIELD \
-  ((bitfield_field32_t) { .mask = ETH_IDMA_NUM_BYTES_NUM_BYTES_MASK, .index = ETH_IDMA_NUM_BYTES_NUM_BYTES_OFFSET })
+#define ETH_IDMA_LENGTH_REG_OFFSET 0x30
+#define ETH_IDMA_LENGTH_NUM_BYTES_MASK 0xffffffff
+#define ETH_IDMA_LENGTH_NUM_BYTES_OFFSET 0
+#define ETH_IDMA_LENGTH_NUM_BYTES_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_LENGTH_NUM_BYTES_MASK, .index = ETH_IDMA_LENGTH_NUM_BYTES_OFFSET })
 
-// DMA Status
-#define ETH_IDMA_STATUS_REG_OFFSET 0x38
-#define ETH_IDMA_STATUS_BUSY_BIT 0
+// Source protocol of iDMA
+#define ETH_IDMA_SRC_PROTOCOL_REG_OFFSET 0x38
+#define ETH_IDMA_SRC_PROTOCOL_SRC_PROTOCOL_MASK 0x7
+#define ETH_IDMA_SRC_PROTOCOL_SRC_PROTOCOL_OFFSET 0
+#define ETH_IDMA_SRC_PROTOCOL_SRC_PROTOCOL_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_SRC_PROTOCOL_SRC_PROTOCOL_MASK, .index = ETH_IDMA_SRC_PROTOCOL_SRC_PROTOCOL_OFFSET })
 
-// Next ID, launches transfer, returns 0 if transfer not set up properly.
-#define ETH_IDMA_NEXT_ID_REG_OFFSET 0x40
+// Destination protocol of iDMA
+#define ETH_IDMA_DST_PROTOCOL_REG_OFFSET 0x40
+#define ETH_IDMA_DST_PROTOCOL_DST_PROTOCOL_MASK 0x7
+#define ETH_IDMA_DST_PROTOCOL_DST_PROTOCOL_OFFSET 0
+#define ETH_IDMA_DST_PROTOCOL_DST_PROTOCOL_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_DST_PROTOCOL_DST_PROTOCOL_MASK, .index = ETH_IDMA_DST_PROTOCOL_DST_PROTOCOL_OFFSET })
 
-// Get ID of finished transactions.
-#define ETH_IDMA_DONE_REG_OFFSET 0x48
+// iDMA transaction ID
+#define ETH_IDMA_AXI_ID_REG_OFFSET 0x48
+#define ETH_IDMA_AXI_ID_AXI_ID_BIT 0
+
+// src options
+#define ETH_IDMA_OPT_SRC_REG_OFFSET 0x50
+#define ETH_IDMA_OPT_SRC_BURST_MASK 0x3
+#define ETH_IDMA_OPT_SRC_BURST_OFFSET 0
+#define ETH_IDMA_OPT_SRC_BURST_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_SRC_BURST_MASK, .index = ETH_IDMA_OPT_SRC_BURST_OFFSET })
+#define ETH_IDMA_OPT_SRC_CACHE_MASK 0xf
+#define ETH_IDMA_OPT_SRC_CACHE_OFFSET 2
+#define ETH_IDMA_OPT_SRC_CACHE_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_SRC_CACHE_MASK, .index = ETH_IDMA_OPT_SRC_CACHE_OFFSET })
+#define ETH_IDMA_OPT_SRC_LOCK_BIT 6
+#define ETH_IDMA_OPT_SRC_PROT_MASK 0x7
+#define ETH_IDMA_OPT_SRC_PROT_OFFSET 7
+#define ETH_IDMA_OPT_SRC_PROT_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_SRC_PROT_MASK, .index = ETH_IDMA_OPT_SRC_PROT_OFFSET })
+#define ETH_IDMA_OPT_SRC_QOS_MASK 0xf
+#define ETH_IDMA_OPT_SRC_QOS_OFFSET 10
+#define ETH_IDMA_OPT_SRC_QOS_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_SRC_QOS_MASK, .index = ETH_IDMA_OPT_SRC_QOS_OFFSET })
+#define ETH_IDMA_OPT_SRC_REGION_MASK 0xf
+#define ETH_IDMA_OPT_SRC_REGION_OFFSET 14
+#define ETH_IDMA_OPT_SRC_REGION_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_SRC_REGION_MASK, .index = ETH_IDMA_OPT_SRC_REGION_OFFSET })
+
+// dst options
+#define ETH_IDMA_OPT_DST_REG_OFFSET 0x58
+#define ETH_IDMA_OPT_DST_BURST_MASK 0x3
+#define ETH_IDMA_OPT_DST_BURST_OFFSET 0
+#define ETH_IDMA_OPT_DST_BURST_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_DST_BURST_MASK, .index = ETH_IDMA_OPT_DST_BURST_OFFSET })
+#define ETH_IDMA_OPT_DST_CACHE_MASK 0xf
+#define ETH_IDMA_OPT_DST_CACHE_OFFSET 2
+#define ETH_IDMA_OPT_DST_CACHE_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_DST_CACHE_MASK, .index = ETH_IDMA_OPT_DST_CACHE_OFFSET })
+#define ETH_IDMA_OPT_DST_LOCK_BIT 6
+#define ETH_IDMA_OPT_DST_PROT_MASK 0x7
+#define ETH_IDMA_OPT_DST_PROT_OFFSET 7
+#define ETH_IDMA_OPT_DST_PROT_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_DST_PROT_MASK, .index = ETH_IDMA_OPT_DST_PROT_OFFSET })
+#define ETH_IDMA_OPT_DST_QOS_MASK 0xf
+#define ETH_IDMA_OPT_DST_QOS_OFFSET 10
+#define ETH_IDMA_OPT_DST_QOS_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_DST_QOS_MASK, .index = ETH_IDMA_OPT_DST_QOS_OFFSET })
+#define ETH_IDMA_OPT_DST_REGION_MASK 0xf
+#define ETH_IDMA_OPT_DST_REGION_OFFSET 14
+#define ETH_IDMA_OPT_DST_REGION_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_OPT_DST_REGION_MASK, .index = ETH_IDMA_OPT_DST_REGION_OFFSET })
+
+// backend options
+#define ETH_IDMA_BEO_REG_OFFSET 0x60
+#define ETH_IDMA_BEO_DECOUPLE_AW_BIT 0
+#define ETH_IDMA_BEO_DECOUPLE_RW_BIT 1
+#define ETH_IDMA_BEO_SRC_MAX_LLEN_MASK 0x7
+#define ETH_IDMA_BEO_SRC_MAX_LLEN_OFFSET 2
+#define ETH_IDMA_BEO_SRC_MAX_LLEN_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_BEO_SRC_MAX_LLEN_MASK, .index = ETH_IDMA_BEO_SRC_MAX_LLEN_OFFSET })
+#define ETH_IDMA_BEO_DST_MAX_LLEN_MASK 0x7
+#define ETH_IDMA_BEO_DST_MAX_LLEN_OFFSET 5
+#define ETH_IDMA_BEO_DST_MAX_LLEN_FIELD \
+  ((bitfield_field32_t) { .mask = ETH_IDMA_BEO_DST_MAX_LLEN_MASK, .index = ETH_IDMA_BEO_DST_MAX_LLEN_OFFSET })
+#define ETH_IDMA_BEO_SRC_REDUCE_LEN_BIT 8
+#define ETH_IDMA_BEO_DST_REDUCE_LEN_BIT 9
+
+// last transfer
+#define ETH_IDMA_LAST_REG_OFFSET 0x68
+#define ETH_IDMA_LAST_LAST_BIT 0
 
 #ifdef __cplusplus
 }  // extern "C"
