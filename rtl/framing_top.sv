@@ -1,4 +1,5 @@
 // See LICENSE for license details.
+
 `ifdef GENESYSII
   `default_nettype none
 `endif
@@ -39,9 +40,9 @@ module framing_top #(
   output axi_stream_rsp_t                               tx_axis_rsp_o,
   output axi_stream_req_t                               rx_axis_req_o,
   input  axi_stream_rsp_t                               rx_axis_rsp_i,
-  // reg configs
+  // REGBUS configs
   input  reg2hw_itf_t                                   reg2hw_i,
-  input  hw2reg_itf_t                                   hw2reg_i    
+  output hw2reg_itf_t                                   hw2reg_o    
 );
 
   import eth_idma_reg_pkg::* ;
@@ -61,14 +62,14 @@ module framing_top #(
   logic       rx_axis_tuser_5_q,  rx_axis_tuser_4_q,  rx_axis_tuser_3_q,  rx_axis_tuser_2_q,  rx_axis_tuser_1_q,  rx_axis_tuser_0_q;
   logic       rx_axis_tuser_5_d,  rx_axis_tuser_4_d,  rx_axis_tuser_3_d,  rx_axis_tuser_2_d,  rx_axis_tuser_1_d,  rx_axis_tuser_0_d;
 
-  assign mac_address = {reg2hw.machi_mdio.upper_mac_address.q, reg2hw.maclo_addr.q}; // combine upper and lower mac address from registers
-  assign promiscuous = reg2hw.machi_mdio.promiscuous.q;
-  assign phy_mdc     = reg2hw.machi_mdio.phy_mdclk.q;
-  assign phy_mdio_o  = reg2hw.machi_mdio.phy_mdio_o.q;
-  assign phy_mdio_oe = reg2hw.machi_mdio.phy_mdio_oe.q;
+  assign mac_address = {reg2hw_i.machi_mdio.upper_mac_address.q, reg2hw_i.maclo_addr.q}; // combine upper and lower mac address from registers
+  assign promiscuous = reg2hw_i.machi_mdio.promiscuous.q;
+  assign phy_mdc     = reg2hw_i.machi_mdio.phy_mdclk.q;
+  assign phy_mdio_o  = reg2hw_i.machi_mdio.phy_mdio_o.q;
+  assign phy_mdio_oe = reg2hw_i.machi_mdio.phy_mdio_oe.q;
 
-  assign hw2reg.tx_fcs.de = 1'b1;
-  assign hw2reg.rx_fcs.de = 1'b1;
+  assign hw2reg_o.tx_fcs.de = 1'b1;
+  assign hw2reg_o.rx_fcs.de = 1'b1;
 
   always_comb begin
     rx_axis_tdata_4_d  = rx_axis_tdata_5_q;
@@ -201,8 +202,8 @@ module framing_top #(
     .rx_axis_tuser (rx_axis_tuser_5_d   ),
 
     // Error registers
-    .rx_fcs_reg    (hw2reg.rx_fcs.d    ),
-    .tx_fcs_reg    (hw2reg.tx_fcs.d    )
+    .rx_fcs_reg    (hw2reg_o.rx_fcs.d    ),
+    .tx_fcs_reg    (hw2reg_o.tx_fcs.d    )
   );
 
 endmodule // framing_top

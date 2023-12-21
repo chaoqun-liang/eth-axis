@@ -29,33 +29,33 @@ module eth_top #(
   parameter int AW_REGBUS = 4
 ) (
   // Internal 125 MHz clock
-  input  wire                                           clk_i        ,
-  input  wire                                           rst_ni       ,
-  input  wire                                           clk90_int    ,
-  input  wire                                           clk_200_int  ,
+  input  wire                                  clk_i        ,
+  input  wire                                  rst_ni       ,
+  input  wire                                  clk90_int    ,
+  input  wire                                  clk_200_int  ,
   // Ethernet: 1000BASE-T RGMII
-  input  wire                                           phy_rx_clk   ,
-  input  wire     [3:0]                                 phy_rxd      ,
-  input  wire                                           phy_rx_ctl   ,
-  output wire                                           phy_tx_clk   ,
-  output wire     [3:0]                                 phy_txd      ,
-  output wire                                           phy_tx_ctl   ,
-  output wire                                           phy_reset_n  ,
-  input  wire                                           phy_int_n    ,
-  input  wire                                           phy_pme_n    ,
+  input  wire                                  phy_rx_clk   ,
+  input  wire     [3:0]                        phy_rxd      ,
+  input  wire                                  phy_rx_ctl   ,
+  output wire                                  phy_tx_clk   ,
+  output wire     [3:0]                        phy_txd      ,
+  output wire                                  phy_tx_ctl   ,
+  output wire                                  phy_reset_n  ,
+  input  wire                                  phy_int_n    ,
+  input  wire                                  phy_pme_n    ,
   // MDIO
-  input  wire                                           phy_mdio_i   ,
-  output reg                                            phy_mdio_o   ,
-  output reg                                            phy_mdio_oe  ,
-  output wire                                           phy_mdc      ,
+  input  wire                                  phy_mdio_i   ,
+  output reg                                   phy_mdio_o   ,
+  output reg                                   phy_mdio_oe  ,
+  output wire                                  phy_mdc      ,
   // AXIS TX/RX
-  input  axi_stream_req_t                               tx_axis_req_i,
-  output axi_stream_rsp_t                               tx_axis_rsp_o,
-  output axi_stream_req_t                               rx_axis_req_o,
-  input  axi_stream_rsp_t                               rx_axis_rsp_i,
+  input  axi_stream_req_t                      tx_axis_req_i,
+  output axi_stream_rsp_t                      tx_axis_rsp_o,
+  output axi_stream_req_t                      rx_axis_req_o,
+  input  axi_stream_rsp_t                      rx_axis_rsp_i,
   // Reg configs
-  input  hw2reg_itf_t                                   hw2reg_i     ,
-  input  reg2hw_itf_t                                   reg2hw_i
+  input  reg2hw_itf_t                          reg2hw_i     ,
+  output hw2reg_itf_t                          hw2reg_o    
 );
 
 // ---------------- axis streams for the framing module ----------------------
@@ -84,30 +84,30 @@ module eth_top #(
     .axi_stream_req_t  ( s_framing_req_t ),
     .axi_stream_rsp_t  ( s_framing_rsp_t ),
     .reg2hw_itf_t      ( reg2hw_itf_t    ),
-    .rhw2reg_itf_t     ( hw2reg_itf_t    ),
+    .hw2reg_itf_t      ( hw2reg_itf_t    ),
     .AW_REGBUS         ( AW_REGBUS       )
   ) i_framing_top (
-    .rst_ni(rst_ni),
-    .clk_i(clk_i),
-    .clk90_int(clk90_int),
-    .clk_200_int(clk_200_int),
+    .rst_ni         ( rst_ni      ),
+    .clk_i          ( clk_i       ),
+    .clk90_int      ( clk90_int   ),
+    .clk_200_int    ( clk_200_int ),
 
     // Ethernet: 1000BASE-T RGMII
-    .phy_rx_clk(phy_rx_clk),
-    .phy_rxd(phy_rxd),
-    .phy_rx_ctl(phy_rx_ctl),
-    .phy_tx_clk(phy_tx_clk),
-    .phy_txd(phy_txd),
-    .phy_tx_ctl(phy_tx_ctl),
-    .phy_reset_n(phy_reset_n),
-    .phy_int_n(phy_int_n),
-    .phy_pme_n(phy_pme_n),
+    .phy_rx_clk     ( phy_rx_clk  ),
+    .phy_rxd        ( phy_rxd     ),
+    .phy_rx_ctl     ( phy_rx_ctl  ),
+    .phy_tx_clk     ( phy_tx_clk  ),
+    .phy_txd        ( phy_txd     ),
+    .phy_tx_ctl     ( phy_tx_ctl  ),
+    .phy_reset_n    ( phy_reset_n ),
+    .phy_int_n      ( phy_int_n   ),
+    .phy_pme_n      ( phy_pme_n   ),
 
     // MDIO
-    .phy_mdio_i(phy_mdio_i),
-    .phy_mdio_o(phy_mdio_o),
-    .phy_mdio_oe(phy_mdio_oe),
-    .phy_mdc(phy_mdc),
+    .phy_mdio_i     ( phy_mdio_i  ),
+    .phy_mdio_o     ( phy_mdio_o  ),
+    .phy_mdio_oe    ( phy_mdio_oe ),
+    .phy_mdc        ( phy_mdc     ),
 
     // AXIS TX/RX
     .tx_axis_req_i(s_framing_tx_req),
@@ -116,46 +116,46 @@ module eth_top #(
     .rx_axis_rsp_i(s_framing_rx_rsp),
 
     // Reg Interface
-    .reg2hw_i(reg2hw_i),
-    .hw2reg_i(hw2reg_i)
+    .reg2hw_i       ( reg2hw_i    ),
+    .hw2reg_o       ( hw2reg_o    )
   );
 
   axi_stream_dw_downsizer #(
-    .DataWidthIn         (DataWidth),
-    .DataWidthOut        (FramingDataWidth),
-    .IdWidth             (IdWidth),
-    .DestWidth           (DestWidth),
-    .UserWidth           (UserWidth),
-    .axi_stream_in_req_t(axi_stream_req_t),
-    .axi_stream_in_rsp_t(axi_stream_rsp_t),
-    .axi_stream_out_req_t(s_framing_req_t),
-    .axi_stream_out_rsp_t(s_framing_rsp_t)
+    .DataWidthIn          ( DataWidth        ),
+    .DataWidthOut         ( FramingDataWidth ),
+    .IdWidth              ( IdWidth          ),
+    .DestWidth            ( DestWidth        ),
+    .UserWidth            ( UserWidth        ),
+    .axi_stream_in_req_t  ( axi_stream_req_t ),
+    .axi_stream_in_rsp_t  ( axi_stream_rsp_t ),
+    .axi_stream_out_req_t ( s_framing_req_t  ),
+    .axi_stream_out_rsp_t ( s_framing_rsp_t  )
   ) i_axi_stream_dw_downsizer (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .in_req_i (tx_axis_req_i),
-    .in_rsp_o (tx_axis_rsp_o),
-    .out_req_o(s_framing_tx_req),
-    .out_rsp_i(s_framing_tx_rsp)
+    .clk_i      ( clk_i            ),
+    .rst_ni     ( rst_ni           ),
+    .in_req_i   ( tx_axis_req_i    ),
+    .in_rsp_o   ( tx_axis_rsp_o    ),
+    .out_req_o  ( s_framing_tx_req ),
+    .out_rsp_i  ( s_framing_tx_rsp )
   );
 
   axi_stream_dw_upsizer #(
-    .DataWidthIn         (FramingDataWidth),
-    .DataWidthOut        (DataWidth),
-    .IdWidth             (IdWidth),
-    .DestWidth           (DestWidth),
-    .UserWidth           (UserWidth),
-    .axi_stream_in_req_t(s_framing_req_t),
-    .axi_stream_in_rsp_t(s_framing_rsp_t),
-    .axi_stream_out_req_t(axi_stream_req_t),
-    .axi_stream_out_rsp_t(axi_stream_rsp_t)
+    .DataWidthIn           ( FramingDataWidth ),
+    .DataWidthOut          ( DataWidth        ),
+    .IdWidth               ( IdWidth          ),
+    .DestWidth             ( DestWidth        ),
+    .UserWidth             ( UserWidth        ),
+    .axi_stream_in_req_t   ( s_framing_req_t  ),
+    .axi_stream_in_rsp_t   ( s_framing_rsp_t  ),
+    .axi_stream_out_req_t  ( axi_stream_req_t ),
+    .axi_stream_out_rsp_t  ( axi_stream_rsp_t )
   ) i_axi_stream_dw_upsizer (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .in_req_i (s_framing_rx_req),
-    .in_rsp_o (s_framing_rx_rsp),
-    .out_req_o(rx_axis_req_o),
-    .out_rsp_i(rx_axis_rsp_i)
+    .clk_i     ( clk_i             ),
+    .rst_ni    ( rst_ni            ),
+    .in_req_i  ( s_framing_rx_req  ),
+    .in_rsp_o  ( s_framing_rx_rsp  ),
+    .out_req_o ( rx_axis_req_o     ),
+    .out_rsp_i ( rx_axis_rsp_i     )
   );
 
 endmodule : eth_top
