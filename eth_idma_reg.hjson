@@ -140,7 +140,7 @@
           fields: [
            { bits: "1:0", name: "burst",
              desc: "burst opt"
-             resval: "0"
+             resval: "1"
            },
            { bits: "5:2", name: "cache",
              desc: "cache opt"
@@ -171,7 +171,7 @@
           fields: [
            { bits: "1:0", name: "burst",
              desc: "burst opt"
-             resval: "0"
+             resval: "1"
            },
            { bits: "5:2", name: "cache",
              desc: "cache opt"
