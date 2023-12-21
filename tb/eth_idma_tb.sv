@@ -131,8 +131,8 @@ module eth_idma_tb
   reg_bus_drv_t reg_drv_tx  = new(reg_bus_tx);
   reg_bus_drv_t reg_drv_rx  = new(reg_bus_rx);
   
-  eth_idma_pkg::reg_req_t reg_bus_tx_req, reg_bus_rx_req;
-  eth_idma_pkg::reg_rsp_t reg_bus_tx_rsp, reg_bus_rx_rsp;
+  eth_idma_pkg::reg_bus_req_t reg_bus_tx_req, reg_bus_rx_req;
+  eth_idma_pkg::reg_bus_rsp_t reg_bus_tx_rsp, reg_bus_rx_rsp;
  
   
   `REG_BUS_ASSIGN_TO_REQ (reg_bus_tx_req, reg_bus_tx)
@@ -299,8 +299,8 @@ axi_rw_join #(
     .mst_resp_i       ( axi_rx_rsp_mem    )
 );
 
- eth_idma_pkg::reg_req_t rx_reg_idma_req, tx_reg_idma_req;
- eth_idma_pkg::reg_rsp_t rx_reg_idma_rsp, tx_reg_idma_rsp;
+ eth_idma_pkg::reg_bus_req_t rx_reg_idma_req, tx_reg_idma_req;
+ eth_idma_pkg::reg_bus_rsp_t rx_reg_idma_rsp, tx_reg_idma_rsp;
 
  eth_idma_wrap #(
     .DataWidth           ( DataWidth           ),    
@@ -474,9 +474,19 @@ axi_rw_join #(
 
     //wait for rsp valid to be asserted to see the response
     //rsp_ready to be 0 done
-    repeat(40) @(posedge s_clk);
+    repeat(80) @(posedge s_clk); // wait enough till all  data are written into rx mem. 
     tx_idma_req_valid = 0;
     rx_idma_req_valid = 0;
+    
+
+    for(int j=0; j<64; j++) begin
+      if (i_tx_axi_sim_mem.mem[j] != i_rx_axi_sim_mem.mem[j]) begin
+        $display("Data at mem[%d] was received %h but was sent as %h", j, i_rx_axi_sim_mem.mem[j], i_tx_axi_sim_mem.mem[j]);
+      end else begin
+        $display("Data at mem[%d] was correctly received: %h", j, i_rx_axi_sim_mem.mem[j] );
+      end
+    end
+
     $finish;
 
  end
