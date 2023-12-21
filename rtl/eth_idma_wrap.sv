@@ -62,8 +62,9 @@ module eth_idma_wrap #(
   /// Offset type (do not override!)
   parameter type offset_t                    = logic[OffsetWidth-1:0],
   /// 
-  parameter type reg_req_t                   = eth_idma_pkg::reg_req_t,
-  parameter type reg_rsp_t                   = eth_idma_pkg::reg_rsp_t
+
+  parameter type reg_req_t                   = eth_idma_pkg::reg_bus_req_t,
+  parameter type reg_rsp_t                   = eth_idma_pkg::reg_bus_rsp_t
 )(
   input  logic                       clk_i,
   input  logic                       rst_ni, 
@@ -107,10 +108,10 @@ module eth_idma_wrap #(
   input  logic                       eh_req_valid_i,
   output logic                       eh_req_ready_o,
 
-  output eth_idma_pkg::axi_req_t     axi_read_req_o,
-  input  eth_idma_pkg::axi_rsp_t     axi_read_rsp_i,
-  output eth_idma_pkg::axi_req_t     axi_write_req_o,
-  input  eth_idma_pkg::axi_rsp_t     axi_write_rsp_i,
+  output               eth_idma_pkg::axi_req_t     axi_read_req_o,
+  input                eth_idma_pkg::axi_rsp_t     axi_read_rsp_i,
+  output               eth_idma_pkg::axi_req_t     axi_write_req_o,
+  input                eth_idma_pkg::axi_rsp_t     axi_write_rsp_i,
 
   /// iDMA busy flags
   output idma_pkg::idma_busy_t       idma_busy_o,
@@ -135,8 +136,7 @@ module eth_idma_wrap #(
  `AXI_TYPEDEF_AR_CHAN_T(axi_ar_chan_t, addr_t, id_t, user_t)
  `AXI_TYPEDEF_R_CHAN_T(axi_r_chan_t, data_t, id_t, user_t) 
 
- `AXI_TYPEDEF_REQ_T(axi_req_t, axi_aw_chan_t, axi_w_chan_t, axi_ar_chan_t)
- `AXI_TYPEDEF_RESP_T(axi_rsp_t, axi_b_chan_t, axi_r_chan_t)
+
 
  
  /// AXI Stream typedefs
@@ -327,7 +327,7 @@ module eth_idma_wrap #(
     .idma_eh_req_t        ( idma_pkg::idma_eh_req_t   ),
     .idma_busy_t          ( idma_pkg::idma_busy_t     ),
     .axi_req_t            ( eth_idma_pkg::axi_req_t   ),
-    .axi_rsp_t            ( eth_idma_pkg::axi_rsp_t   ),
+    .axi_rsp_t            (eth_idma_pkg::axi_rsp_t   ),
     .axis_read_req_t      ( axi_stream_rsp_t     ),
     .axis_read_rsp_t      ( axi_stream_req_t     ),
     .axis_write_req_t     ( axi_stream_req_t     ),
