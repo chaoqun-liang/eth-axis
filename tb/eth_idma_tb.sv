@@ -161,7 +161,7 @@ module eth_idma_tb
       .WarnUninitialized ( 1'b0         ),
       .ClearErrOnAccess  ( 1'b1         ),
       .ApplDelay         ( SYS_TA       ),
-      .AcqDelay          ( SYS_TT       )
+      .AcqDelay          ( SYS_TT       )  // to do
   ) i_tx_axi_sim_mem (
       .clk_i              ( s_clk           ),
       .rst_ni             ( s_rst_n         ),
@@ -255,10 +255,6 @@ module eth_idma_tb
     .reg_req_i           ( reg_bus_tx_req      ),
     .reg_rsp_o           ( reg_bus_tx_rsp      ),
     .testmode_i          ( 1'b0                ),
-    .idma_req_valid_i    ( tx_idma_req_valid   ),
-    .idma_req_ready_o    ( tx_idma_req_ready   ),  
-    .idma_rsp_valid_o    ( tx_idma_rsp_valid   ),
-    .idma_rsp_ready_i    ( tx_idma_rsp_ready   ),
     .idma_eh_req_i       ( idma_eh_req         ), // error handling disabled now
     .eh_req_valid_i      ( eh_req_valid        ),
     .eh_req_ready_o      ( eh_req_ready        ),
@@ -345,11 +341,6 @@ axi_rw_join #(
     .testmode_i       (  1'b0           ),
 
     /// idma request
-    .idma_req_valid_i ( rx_idma_req_valid ),
-    .idma_req_ready_o ( rx_idma_req_ready ),  
-
-    .idma_rsp_valid_o ( rx_idma_rsp_valid ),
-    .idma_rsp_ready_i ( rx_idma_rsp_ready ),
 
     .idma_eh_req_i    (                    ), // error handling disabled now
     .eh_req_valid_i   (                    ),
@@ -397,10 +388,7 @@ axi_rw_join #(
       
       @(posedge s_rst_n);
       @(posedge s_clk);
-      tx_idma_req_valid = 0;
-      rx_idma_req_valid = 0;
-      tx_idma_rsp_ready = 0;
-      rx_idma_rsp_ready = 0;
+  
    
     $readmemh("/scratch/chaol/eth-ETH/fe-ethernet/scripts/rx_mem_init.vmem", i_rx_axi_sim_mem.mem);
     $readmemh("/scratch/chaol/eth-ETH/fe-ethernet/scripts/eth_packet_frame.vmem", i_tx_axi_sim_mem.mem);
@@ -429,19 +417,27 @@ axi_rw_join #(
 
     reg_drv_tx.send_write( 'h40, 64'h5,'h0f , reg_error); // dst protocol
     @(posedge s_clk)
-         
-    tx_idma_req_valid = 1;  // a valid reuqest is available
+    
+    reg_drv_tx.send_write( 'h70, 64'h1,'h0f , reg_error);  // tx req valid
+    @(posedge s_clk)
+    
+
+   // tx_idma_req_valid = 1;  // a valid reuqest is available
 
      // wait for req_ready to become 1, indicate the dma module is ready to accept the request. 
      /// wait till transfer request is accpeted (valid to 0 after the transaction complete)
     //  while (tx_idma_req_ready != 1) begin
     // @(posedge s_clk); // wait for req_ready to become 1, indicating the DMA module is ready to accept the request.
     // end
-    
-    tx_idma_rsp_ready = 1; // tranmsfer launch
+    reg_drv_tx.send_write( 'h80, 64'h1,'h0f , reg_error);  // launch transfer
+    @(posedge s_clk)
+
+    //tx_idma_rsp_ready = 1; // transfer launch
 
     /// rx path reg configs
-    rx_idma_req_valid = 1;
+    //rx_idma_req_valid = 1;
+
+   
 
     reg_drv_rx.send_write( 'h0, 64'h98001032, 'hff, reg_error); //lower 32bits of MAC address
     @(posedge s_clk);
@@ -464,20 +460,27 @@ axi_rw_join #(
     reg_drv_rx.send_write( 'h40, 64'h0,'h0f , reg_error); // dst protocol
     @(posedge s_clk);
     
-    rx_idma_req_valid = 1; // a valid reuqest is available
+    reg_drv_rx.send_write( 'h70, 64'h1,'h0f , reg_error);  // rx req valid
+    @(posedge s_clk)
      
     //  while (rx_idma_req_ready != 1) begin
     // @(posedge s_clk); // wait for req_ready to become 1, indicating the DMA module is ready to accept the request.
     // end
-
-    rx_idma_rsp_ready = 1;  
+     reg_drv_rx.send_write( 'h80, 64'h1,'h0f , reg_error);  // launch transfer
+    @(posedge s_clk)
+   // rx_idma_rsp_ready = 1; 
 
     //wait for rsp valid to be asserted to see the response
     //rsp_ready to be 0 done
     repeat(80) @(posedge s_clk); // wait enough till all  data are written into rx mem. 
-    tx_idma_req_valid = 0;
-    rx_idma_req_valid = 0;
+    // tx_idma_req_valid = 0;
+    // rx_idma_req_valid = 0;
     
+    reg_drv_tx.send_write( 'h70, 64'h0,'h0f , reg_error);  // tx req valid
+    @(posedge s_clk)
+
+    reg_drv_rx.send_write( 'h70, 64'h0,'h0f , reg_error);  // rx req valid
+    @(posedge s_clk)
 
     for(int j=0; j<64; j++) begin
       if (i_tx_axi_sim_mem.mem[j] != i_rx_axi_sim_mem.mem[j]) begin

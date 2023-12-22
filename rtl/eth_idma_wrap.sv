@@ -95,14 +95,6 @@ module eth_idma_wrap #(
   /// idma testmode in
   input  logic                       testmode_i,
 
-  // /// 1D iDMA request
-  input  logic                       idma_req_valid_i,
-  output logic                       idma_req_ready_o,
-
-  // /// iDMA response
-  output logic                       idma_rsp_valid_o,
-  input  logic                       idma_rsp_ready_i,
-
   /// Error handler request
   input  idma_pkg::idma_eh_req_t     idma_eh_req_i,
   input  logic                       eh_req_valid_i,
@@ -122,12 +114,15 @@ module eth_idma_wrap #(
 
 );
  
+ logic  idma_req_valid ;
+ logic  idma_rsp_ready ;
+    
  import eth_idma_reg_pkg::*;
  localparam idma_pkg::error_cap_e ErrorCap = ErrorHandling ? idma_pkg::ERROR_HANDLING :
                                                                 idma_pkg::NO_ERROR_HANDLING;
  localparam int unsigned AW_REGBUS = 8; 
 
-
+ 
  /// AXI4+ATOP typedefs
  `AXI_TYPEDEF_AW_CHAN_T(axi_aw_chan_t, addr_t, id_t, user_t)
  `AXI_TYPEDEF_W_CHAN_T(axi_w_chan_t, data_t, strb_t, user_t)
@@ -137,8 +132,6 @@ module eth_idma_wrap #(
  `AXI_TYPEDEF_R_CHAN_T(axi_r_chan_t, data_t, id_t, user_t) 
 
 
-
- 
  /// AXI Stream typedefs
  `IDMA_AXI_STREAM_TYPEDEF_S_CHAN_T(axis_t_chan_t, data_t, strb_t, strb_t, id_t, id_t, user_t)
  `IDMA_AXI_STREAM_TYPEDEF_REQ_T(axi_stream_req_t, axis_t_chan_t)
@@ -231,6 +224,8 @@ module eth_idma_wrap #(
   axi_stream_req_t axis_write_req;
   axi_stream_rsp_t axis_write_rsp;
  
+  assign hw2reg.rsp_valid.de = 1'b1;
+  assign hw2reg.req_ready.de = 1'b1;
 
   idma_req_t idma_reg_req;
   idma_rsp_t idma_reg_rsp;
@@ -267,6 +262,12 @@ module eth_idma_wrap #(
   assign idma_reg_req.opt.beo.dst_reduce_len     = reg2hw.beo.dst_reduce_len.q;
 
   assign idma_reg_req.opt.last                   = reg2hw.last.q;
+
+  // idma control signals
+  assign idma_req_valid                        = reg2hw.req_valid.q;
+  assign idma_rsp_ready                        = reg2hw.rsp_ready.q;
+
+
 
   eth_top #(
     .axi_stream_req_t   (  axi_stream_req_t  ),
@@ -341,11 +342,11 @@ module eth_idma_wrap #(
     .rst_ni               ( rst_ni            ),
     .testmode_i           ( testmode_i        ),
     .idma_req_i           ( idma_reg_req      ),
-    .req_valid_i          ( idma_req_valid_i  ),
-    .req_ready_o          ( idma_req_ready_o  ),  
+    .req_valid_i          ( idma_req_valid    ),
+    .req_ready_o          ( hw2reg.req_ready.d    ),  
     .idma_rsp_o           ( idma_reg_rsp      ),
-    .rsp_valid_o          ( idma_rsp_valid_o  ),
-    .rsp_ready_i          ( idma_rsp_ready_i  ),
+    .rsp_valid_o          ( hw2reg.rsp_valid.d  ),
+    .rsp_ready_i          ( idma_rsp_ready  ),
     .idma_eh_req_i        ( idma_eh_req_i     ),
     .eh_req_valid_i       ( eh_req_valid_i    ),
     .eh_req_ready_o       ( eh_req_ready_o    ),

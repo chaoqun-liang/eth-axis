@@ -147,6 +147,22 @@ extern "C" {
 #define ETH_IDMA_LAST_REG_OFFSET 0x68
 #define ETH_IDMA_LAST_LAST_BIT 0
 
+// idma request valid
+#define ETH_IDMA_REQ_VALID_REG_OFFSET 0x70
+#define ETH_IDMA_REQ_VALID_REQ_VALID_BIT 0
+
+// idma request ready
+#define ETH_IDMA_REQ_READY_REG_OFFSET 0x78
+#define ETH_IDMA_REQ_READY_REQ_READY_BIT 0
+
+// idma response ready
+#define ETH_IDMA_RSP_READY_REG_OFFSET 0x80
+#define ETH_IDMA_RSP_READY_RSP_READY_BIT 0
+
+// idma response valid
+#define ETH_IDMA_RSP_VALID_REG_OFFSET 0x88
+#define ETH_IDMA_RSP_VALID_RSP_VALID_BIT 0
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

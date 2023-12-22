@@ -237,6 +237,54 @@
             }
           ]
         },
+        { name:"req_valid",
+          desc: "idma request valid",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "0",
+              name: "req_valid",
+              desc: "valid idma request"
+              resval: "0"
+            }
+          ]
+        },
+        { name:"req_ready",
+          desc: "idma request ready",
+          swaccess: "ro",
+          hwaccess: "hrw",
+          fields: [
+            { bits: "0",
+              name: "req_ready",
+              desc: "idma request ready"
+              resval: "0"
+            }
+          ]
+        },
+        { name:"rsp_ready",
+          desc: "idma response ready",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "0",
+              name: "rsp_ready",
+              desc: "idma response ready"
+              resval: "0"
+            }
+          ]
+        },
+        { name:"rsp_valid",
+          desc: "idma response valid",
+          swaccess: "ro",
+          hwaccess: "hrw",
+          fields: [
+            { bits: "0",
+              name: "rsp_valid",
+              desc: "idma response valid"
+              resval: "0"
+            }
+          ]
+        },
   ]
 }
 
