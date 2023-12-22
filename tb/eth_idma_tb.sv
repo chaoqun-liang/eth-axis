@@ -466,13 +466,13 @@ axi_rw_join #(
     //  while (rx_idma_req_ready != 1) begin
     // @(posedge s_clk); // wait for req_ready to become 1, indicating the DMA module is ready to accept the request.
     // end
-     reg_drv_rx.send_write( 'h80, 64'h1,'h0f , reg_error);  // launch transfer
+    reg_drv_rx.send_write( 'h80, 64'h1,'h0f , reg_error);  // launch transfer
     @(posedge s_clk)
    // rx_idma_rsp_ready = 1; 
 
     //wait for rsp valid to be asserted to see the response
     //rsp_ready to be 0 done
-    repeat(80) @(posedge s_clk); // wait enough till all  data are written into rx mem. 
+    repeat(70) @(posedge s_clk); // wait enough till all  data are written into rx mem. 
     // tx_idma_req_valid = 0;
     // rx_idma_req_valid = 0;
     
@@ -481,6 +481,8 @@ axi_rw_join #(
 
     reg_drv_rx.send_write( 'h70, 64'h0,'h0f , reg_error);  // rx req valid
     @(posedge s_clk)
+
+    // repeat(10) @(posedge s_clk);
 
     for(int j=0; j<64; j++) begin
       if (i_tx_axi_sim_mem.mem[j] != i_rx_axi_sim_mem.mem[j]) begin
