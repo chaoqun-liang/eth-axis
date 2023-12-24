@@ -1,2 +1,0 @@
-overrides:
-  idma: { path: "working_dir/idma" } # Temporary override by Bender using `bender clone` command
