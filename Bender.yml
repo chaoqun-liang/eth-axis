@@ -9,7 +9,7 @@ package:
     - "Wolfgang Roenninger <wroennin@ethz.ch>"
 
 dependencies:
-  axi_mem_if : { git: git@github.com:pulp-platform/axi_mem_if.git, version: 0.2.1 }
+  axi_mem_if : { git: git@github.com:pulp-platform/axi_mem_if.git, rev: "b494701501886ad71ba0c128560cc371610bcf1a" }
   axi : { git: "git@github.com:pulp-platform/axi.git", version: 0.39.1 }
   common_verification : { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
   register_interface : { git: "https://github.com/pulp-platform/register_interface.git", version: 0.4.2 }

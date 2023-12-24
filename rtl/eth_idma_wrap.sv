@@ -328,7 +328,7 @@ module eth_idma_wrap #(
     .idma_eh_req_t        ( idma_pkg::idma_eh_req_t   ),
     .idma_busy_t          ( idma_pkg::idma_busy_t     ),
     .axi_req_t            ( eth_idma_pkg::axi_req_t   ),
-    .axi_rsp_t            (eth_idma_pkg::axi_rsp_t   ),
+    .axi_rsp_t            ( eth_idma_pkg::axi_rsp_t   ),
     .axis_read_req_t      ( axi_stream_rsp_t     ),
     .axis_read_rsp_t      ( axi_stream_req_t     ),
     .axis_write_req_t     ( axi_stream_req_t     ),
