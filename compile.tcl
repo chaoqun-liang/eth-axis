@@ -567,6 +567,7 @@ if {[catch {vlog -incr -sv \
     "$ROOT/rtl/ssio_ddr_in.sv" \
     "$ROOT/rtl/eth_top_pkg.sv" \
     "$ROOT/rtl/eth_top.sv" \
+    "$ROOT/rtl/eth_top_synth.sv" \
     "$ROOT/rtl/eth_idma_pkg.sv" \
     "$ROOT/rtl/eth_idma_wrap.sv"
 }]} {return 1}
